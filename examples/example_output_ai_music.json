@@ -1,0 +1,269 @@
+{
+  "run_id": "20250206_143022_a1b2c3",
+  "generated": "2025-02-06T14:30:22+00:00",
+  "total": 3,
+  "packages": [
+    {
+      "tutorial": {
+        "title": "How to Make a Hit Song with Suno AI in 10 Minutes",
+        "url": "https://www.youtube.com/watch?v=EXAMPLE001",
+        "canonical_url": "https://www.youtube.com/watch?v=EXAMPLE001",
+        "fingerprint": "abc123def456",
+        "platform": "youtube",
+        "niche": "ai_music",
+        "publish_date": "2025-01-28T10:00:00+00:00",
+        "description": "Learn how to create professional-sounding music using Suno AI. Step-by-step guide covering prompt engineering, style selection, and post-production tips.",
+        "view_count": 245000,
+        "like_count": 18200,
+        "comment_count": 1340,
+        "provider_source": "youtube"
+      },
+      "score": {
+        "recency": 0.7523,
+        "engagement": 0.6841,
+        "authority": 0.7000,
+        "trend_bonus": 0.1200,
+        "cross_platform_bonus": 0.1500,
+        "base_score": 0.7164,
+        "final_score": 0.9864
+      },
+      "why_trending": "Suno AI v4 launched recently driving massive search volume; creator has track record of viral AI music content; topic overlaps with AI + music production niches",
+      "critique": {
+        "is_trend": true,
+        "confidence": 0.92,
+        "reasons": [
+          "Suno AI v4 release is generating significant buzz across platforms",
+          "AI music creation is a rapidly growing niche with week-over-week search increases",
+          "Tutorial has strong engagement metrics relative to channel size"
+        ],
+        "red_flags": [],
+        "what_to_verify": [
+          "Check if engagement is organic vs promoted",
+          "Verify Suno v4 feature claims are accurate"
+        ],
+        "trend_type": "growing"
+      },
+      "concepts": [
+        {
+          "hook": "I turned my computer science homework into a Grammy-worthy banger",
+          "angle": "Use the Suno tutorial to turn the most boring academic content into surprisingly fire music",
+          "comedic_twist": "The professor assigns a 10-page essay, you submit a 3-minute song that covers all the material — and it slaps",
+          "format": "TikTok series: 'Study Songs That Go Harder Than They Should'",
+          "why_viral": "Everyone relates to boring homework; the contrast between academic content and genuine bangers is inherently shareable"
+        },
+        {
+          "hook": "POV: Your Uber driver is an AI music producer",
+          "angle": "Create a Suno tutorial song DURING an Uber ride, showing the entire process from idea to finished track before reaching the destination",
+          "comedic_twist": "The Uber driver starts vibing to it and asks for the Spotify link",
+          "format": "YouTube Short / TikTok — real-time creation challenge",
+          "why_viral": "Time pressure + unexpected quality + relatable rideshare setting"
+        },
+        {
+          "hook": "Teaching my grandma to make AI music — she made a better song than me",
+          "angle": "Intergenerational tech tutorial where an elderly person follows the Suno tutorial and creates something unexpectedly amazing",
+          "comedic_twist": "Grandma's song about knitting goes viral on SoundCloud",
+          "format": "YouTube Short with reaction format",
+          "why_viral": "Wholesome + surprising competence + grandparent content always performs well"
+        }
+      ],
+      "lyrics": {
+        "verses": [
+          "Open up your browser, head to Suno dot com\nSign up with your email, yeah it won't take long\nClick that 'Create' button, watch the magic start\nAI gonna help you make some chart-topping art",
+          "Type your prompt in clearly, be specific with the vibe\nGenre, mood, and tempo — let the AI decide\nWant some lo-fi beats or maybe country twang?\nJust describe the feeling, let the music bang"
+        ],
+        "chorus": "Suno, Suno, making music easy now (easy now!)\nPrompt it, drop it, AI shows you how (shows you how!)\nVerse and chorus, bridge it all together\nTen-minute hits that sound like they took forever",
+        "bridge": "Don't forget to iterate — try two or three\nPick the best take, that's the golden key\nDownload, share it, let the world hear\nYour AI-powered anthem — crystal clear",
+        "rap_breakdown": "Step one — sign up, step two — create\nStep three — write a prompt that's really great\nStep four — pick your style, make it yours\nStep five — generate, open up the doors\nStep six — listen back, choose the best\nStep seven — download, share with the rest\nTen minutes flat and you've got a track\nAI music producer — there's no going back!",
+        "step_callouts": [
+          "Step 1: Sign up at suno.com",
+          "Step 2: Click 'Create' to start a new song",
+          "Step 3: Write a descriptive prompt (genre, mood, topic)",
+          "Step 4: Select custom mode for lyrics control",
+          "Step 5: Generate 2-3 variations",
+          "Step 6: Pick your favorite take",
+          "Step 7: Download and share"
+        ],
+        "full_text": "[Verse 1]\nOpen up your browser, head to Suno dot com\nSign up with your email, yeah it won't take long\nClick that 'Create' button, watch the magic start\nAI gonna help you make some chart-topping art\n\n[Chorus]\nSuno, Suno, making music easy now (easy now!)\nPrompt it, drop it, AI shows you how (shows you how!)\nVerse and chorus, bridge it all together\nTen-minute hits that sound like they took forever\n\n[Verse 2]\nType your prompt in clearly, be specific with the vibe\nGenre, mood, and tempo — let the AI decide\nWant some lo-fi beats or maybe country twang?\nJust describe the feeling, let the music bang\n\n[Chorus]\nSuno, Suno, making music easy now (easy now!)\nPrompt it, drop it, AI shows you how (shows you how!)\nVerse and chorus, bridge it all together\nTen-minute hits that sound like they took forever\n\n[Rap Breakdown]\nStep one — sign up, step two — create\nStep three — write a prompt that's really great\nStep four — pick your style, make it yours\nStep five — generate, open up the doors\nStep six — listen back, choose the best\nStep seven — download, share with the rest\nTen minutes flat and you've got a track\nAI music producer — there's no going back!\n\n[Bridge]\nDon't forget to iterate — try two or three\nPick the best take, that's the golden key\nDownload, share it, let the world hear\nYour AI-powered anthem — crystal clear\n\n[Chorus]\nSuno, Suno, making music easy now (easy now!)\nPrompt it, drop it, AI shows you how (shows you how!)\nVerse and chorus, bridge it all together\nTen-minute hits that sound like they took forever"
+      },
+      "music_spec": {
+        "genre": "Electro-pop / Hyperpop",
+        "bpm_range": "128-135",
+        "instruments": ["synthesizer", "808 bass", "handclaps", "electric piano", "vocal chops"],
+        "vocal_style": "Energetic male/female vocal, clean with slight autotune, conversational verses, belted chorus",
+        "vocal_references": ["Charlie Puth", "Doja Cat", "Jack Harlow"],
+        "mood": "Upbeat, playful, educational but party-ready"
+      },
+      "suno_prompt": {
+        "title": "Suno Tutorial Anthem (Learn to Make AI Music)",
+        "style_prompt": "Upbeat electro-pop, hyperpop influence, 130 BPM, synthesizer, 808 bass, handclaps, clean energetic male vocals with light autotune, educational, fun, catchy chorus, conversational verses",
+        "lyrics": "[Verse 1]\nOpen up your browser, head to Suno dot com...",
+        "negative_prompt": "avoid mumbling, avoid off-key vocals, avoid heavy distortion, avoid dark mood, avoid explicit content, avoid slow tempo",
+        "short_version_lyrics": "[Verse]\nOpen up your browser, head to Suno dot com\nSign up with your email, yeah it won't take long\nClick that 'Create' button, watch the magic start\nAI gonna help you make some chart-topping art\n\n[Chorus]\nSuno, Suno, making music easy now (easy now!)\nPrompt it, drop it, AI shows you how (shows you how!)\nVerse and chorus, bridge it all together\nTen-minute hits that sound like they took forever",
+        "full_version_lyrics": "[Full lyrics as shown above]"
+      },
+      "viral_packaging": {
+        "suggested_title": "I Made a HIT SONG in 10 Minutes Using AI (Suno Tutorial)",
+        "ten_second_hook_script": "What if I told you that you could make a song that sounds like THIS — in under 10 minutes — with zero musical talent? I'm about to show you the exact steps, and I even turned the tutorial itself into a song.",
+        "thumbnail_text_ideas": ["10 MIN HIT SONG", "AI MADE THIS?!", "ZERO TALENT NEEDED"],
+        "tiktok_caption": "I turned a Suno tutorial into an actual banger and I can't stop listening to it 😭🔥 #AIMusic #SunoAI #Tutorial",
+        "hashtags": ["#AIMusic", "#SunoAI", "#Suno", "#AITutorial", "#MusicProduction", "#AIProducer", "#TechTutorial", "#MakeMusic", "#AISong", "#Viral", "#LearnOnTikTok", "#TutorialSong"]
+      }
+    },
+    {
+      "tutorial": {
+        "title": "Udio vs Suno: Which AI Music Tool is Better in 2025?",
+        "url": "https://www.youtube.com/watch?v=EXAMPLE002",
+        "canonical_url": "https://www.youtube.com/watch?v=EXAMPLE002",
+        "fingerprint": "def789ghi012",
+        "platform": "youtube",
+        "niche": "ai_music",
+        "publish_date": "2025-01-25T15:00:00+00:00",
+        "description": "Comprehensive comparison of Udio and Suno AI music generators. Testing quality, features, pricing, and ease of use.",
+        "view_count": 189000,
+        "like_count": 12400,
+        "comment_count": 2100,
+        "provider_source": "youtube"
+      },
+      "score": {
+        "recency": 0.5912,
+        "engagement": 0.6234,
+        "authority": 0.7000,
+        "trend_bonus": 0.0800,
+        "cross_platform_bonus": 0.3000,
+        "base_score": 0.6166,
+        "final_score": 0.9466
+      },
+      "why_trending": "Comparison content between competing AI tools always trends; both platforms recently shipped major updates; mentioned on Reddit, YouTube, and multiple blogs",
+      "critique": {
+        "is_trend": true,
+        "confidence": 0.88,
+        "reasons": [
+          "Head-to-head comparisons trend when both products are actively evolving",
+          "High comment count suggests active debate and engagement",
+          "Cross-platform mentions confirm genuine interest"
+        ],
+        "red_flags": [
+          "Could be affiliate-driven content"
+        ],
+        "what_to_verify": [
+          "Check for affiliate links in description"
+        ],
+        "trend_type": "peaking"
+      },
+      "concepts": [
+        {
+          "hook": "I made Suno and Udio write diss tracks about each other",
+          "angle": "Use each AI music tool to generate a song roasting the other tool, then let viewers vote on which diss track is better",
+          "comedic_twist": "Both AIs accidentally compliment each other instead of dissing",
+          "format": "YouTube video with poll — 'AI Rap Battle'",
+          "why_viral": "Competitive format + rap battle culture + the absurdity of AI tools having beef"
+        }
+      ],
+      "lyrics": {
+        "verses": [],
+        "chorus": "Suno or Udio, which one's gonna win? (gonna win!)\nType your prompt in, let the battle begin...",
+        "bridge": "",
+        "rap_breakdown": "",
+        "step_callouts": [],
+        "full_text": "[Example — abbreviated for demo]"
+      },
+      "music_spec": {
+        "genre": "Hip-hop / Trap",
+        "bpm_range": "140-150",
+        "instruments": ["808 bass", "hi-hats", "snare rolls", "synth pad"],
+        "vocal_style": "Confident rap delivery, clean, battle-rap energy",
+        "vocal_references": ["Eminem", "Logic"],
+        "mood": "Competitive, fun, high-energy"
+      },
+      "suno_prompt": {
+        "title": "The AI Music Showdown",
+        "style_prompt": "Hip-hop, trap beat, 145 BPM, 808 bass, crisp hi-hats, confident male rap vocals, battle-rap energy, fun, educational",
+        "lyrics": "[Abbreviated]",
+        "negative_prompt": "avoid mumbling, avoid dark themes, avoid explicit language",
+        "short_version_lyrics": "[Abbreviated]",
+        "full_version_lyrics": "[Abbreviated]"
+      },
+      "viral_packaging": {
+        "suggested_title": "Suno vs Udio: I Made Them Write DISS TRACKS About Each Other",
+        "ten_second_hook_script": "I made two AI music tools write diss tracks about each other — and one of them actually went HARD.",
+        "thumbnail_text_ideas": ["AI RAP BATTLE", "SUNO vs UDIO", "WHO WINS?"],
+        "tiktok_caption": "Made Suno and Udio diss each other and I was NOT ready for the bars 💀🎤",
+        "hashtags": ["#AIMusic", "#SunoVsUdio", "#RapBattle", "#AIBattle", "#TechComparison"]
+      }
+    },
+    {
+      "tutorial": {
+        "title": "Create Your First AI Song: Complete Beginner's Guide to Suno",
+        "url": "https://medium.com/@example/suno-beginners-guide",
+        "canonical_url": "https://medium.com/@example/suno-beginners-guide",
+        "fingerprint": "jkl345mno678",
+        "platform": "medium",
+        "niche": "ai_music",
+        "publish_date": "2025-02-01T08:00:00+00:00",
+        "description": "A written guide covering every aspect of Suno AI for complete beginners. From account setup to publishing your first track.",
+        "view_count": null,
+        "like_count": null,
+        "comment_count": null,
+        "provider_source": "tavily"
+      },
+      "score": {
+        "recency": 0.8912,
+        "engagement": 0.0000,
+        "authority": 0.4000,
+        "trend_bonus": 0.0000,
+        "cross_platform_bonus": 0.0000,
+        "base_score": 0.4410,
+        "final_score": 0.4410
+      },
+      "why_trending": "Very recent publication on a trending topic; written medium content complements video tutorials",
+      "critique": {
+        "is_trend": true,
+        "confidence": 0.65,
+        "reasons": [
+          "Recent publication date on actively trending topic",
+          "Beginner content performs well in growing niches"
+        ],
+        "red_flags": [
+          "No engagement data available from Medium",
+          "Lower confidence without social proof"
+        ],
+        "what_to_verify": [
+          "Check Medium claps/responses manually"
+        ],
+        "trend_type": "emerging"
+      },
+      "concepts": [],
+      "lyrics": {
+        "verses": [],
+        "chorus": "",
+        "bridge": "",
+        "rap_breakdown": "",
+        "step_callouts": [],
+        "full_text": ""
+      },
+      "music_spec": {
+        "genre": "",
+        "bpm_range": "",
+        "instruments": [],
+        "vocal_style": "",
+        "vocal_references": [],
+        "mood": ""
+      },
+      "suno_prompt": {
+        "title": "",
+        "style_prompt": "",
+        "lyrics": "",
+        "negative_prompt": "",
+        "short_version_lyrics": "",
+        "full_version_lyrics": ""
+      },
+      "viral_packaging": {
+        "suggested_title": "",
+        "ten_second_hook_script": "",
+        "thumbnail_text_ideas": [],
+        "tiktok_caption": "",
+        "hashtags": []
+      }
+    }
+  ]
+}
