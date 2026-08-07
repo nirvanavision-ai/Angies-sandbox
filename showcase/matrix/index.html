@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE DISCREPANCY MATRIX — Forensic Audit Directory</title>
+<meta name="description" content="A laboratory-grade audit interface that places stated alibis beside empirical records — a forensic fiction about the anatomy of a lie.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --abyss: #050a16;
+    --navy: #0a1428;
+    --navy-2: #0e1b36;
+    --line: rgba(53, 224, 255, 0.14);
+    --line-hard: rgba(53, 224, 255, 0.35);
+    --cyan: #35e0ff;
+    --cyan-dim: #1d7f94;
+    --alert: #ffd66b;
+    --alert-bg: rgba(255, 214, 107, 0.06);
+    --truth-bg: rgba(53, 224, 255, 0.05);
+    --steel: #8fa3bf;
+    --white: #e9f2fb;
+    --mono: "JetBrains Mono", "SFMono-Regular", monospace;
+    --sans: "Space Grotesk", -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background:
+      linear-gradient(rgba(53,224,255,0.025) 1px, transparent 1px) 0 0 / 100% 44px,
+      linear-gradient(90deg, rgba(53,224,255,0.025) 1px, transparent 1px) 0 0 / 44px 100%,
+      radial-gradient(ellipse 90% 60% at 50% -10%, #10254d55, transparent 60%),
+      var(--abyss);
+    color: var(--white);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  ::selection { background: var(--cyan); color: var(--abyss); }
+  .scanline { position: fixed; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(53,224,255,0.5), transparent); z-index: 80; pointer-events: none; animation: scan 9s linear infinite; }
+  @keyframes scan { from { top: -2px; } to { top: 100vh; } }
+
+  /* ---------- header ---------- */
+  header {
+    border-bottom: 1px solid var(--line);
+    background: rgba(5, 10, 22, 0.85);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 40;
+    padding: 14px clamp(16px, 3vw, 40px);
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .sigil { width: 34px; height: 34px; border: 1px solid var(--line-hard); position: relative; flex-shrink: 0; }
+  .sigil::before, .sigil::after { content: ""; position: absolute; background: var(--cyan); }
+  .sigil::before { left: 50%; top: 4px; bottom: 4px; width: 1px; box-shadow: 0 0 8px var(--cyan); }
+  .sigil::after { top: 50%; left: 4px; right: 4px; height: 1px; box-shadow: 0 0 8px var(--cyan); animation: sigilspin 6s linear infinite; }
+  @keyframes sigilspin { to { transform: rotate(180deg); } }
+  header h1 { font-family: var(--mono); font-size: 15px; font-weight: 600; letter-spacing: 0.28em; }
+  header h1 span { color: var(--cyan); }
+  .case-tag { font-family: var(--mono); font-size: 10px; color: var(--steel); letter-spacing: 0.16em; border: 1px solid var(--line); padding: 5px 12px; }
+  .fiction-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; color: var(--alert); border: 1px dashed rgba(255,214,107,0.4); padding: 5px 12px; margin-left: auto; }
+
+  /* ---------- intro strip ---------- */
+  .intro {
+    padding: clamp(40px, 7vh, 90px) clamp(16px, 3vw, 40px) 30px;
+    max-width: 1500px; margin: 0 auto;
+  }
+  .intro h2 { font-size: clamp(30px, 4.6vw, 58px); font-weight: 300; line-height: 1.1; letter-spacing: -0.01em; max-width: 900px; }
+  .intro h2 b { font-weight: 600; color: var(--cyan); text-shadow: 0 0 30px rgba(53,224,255,0.4); }
+  .intro p { color: var(--steel); max-width: 640px; margin-top: 18px; font-size: 15px; line-height: 1.75; font-weight: 300; }
+  .intro .protocol { font-family: var(--mono); font-size: 11px; color: var(--cyan-dim); letter-spacing: 0.2em; margin-top: 26px; }
+
+  /* ---------- 3-pane matrix ---------- */
+  .matrix {
+    display: grid;
+    grid-template-columns: 280px 1fr 340px;
+    gap: 1px; background: var(--line);
+    border: 1px solid var(--line);
+    max-width: 1500px; margin: 20px auto 60px;
+  }
+  .pane { background: var(--navy); min-height: 70vh; }
+  .pane-head {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.3em; color: var(--cyan);
+    padding: 14px 18px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(to bottom, rgba(53,224,255,0.06), transparent);
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: var(--hdr, 63px); z-index: 10; backdrop-filter: blur(8px);
+  }
+  .pane-head .cnt { color: var(--steel); }
+
+  /* pane 1 — timeline */
+  .timeline { padding: 24px 0 40px; position: relative; }
+  .timeline::before { content: ""; position: absolute; left: 33px; top: 30px; bottom: 30px; width: 1px; background: linear-gradient(var(--line-hard), var(--line)); }
+  .t-node { padding: 16px 18px 16px 56px; position: relative; cursor: pointer; transition: background 0.25s; opacity: 0; transform: translateX(-18px); }
+  .t-node.in { opacity: 1; transform: none; transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1), background 0.25s; }
+  .t-node:hover, .t-node.active { background: rgba(53,224,255,0.05); }
+  .t-node::before {
+    content: ""; position: absolute; left: 29px; top: 22px; width: 9px; height: 9px;
+    border: 1px solid var(--cyan); background: var(--navy); transform: rotate(45deg);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .t-node.anomaly::before { border-color: var(--alert); }
+  .t-node.active::before { background: var(--cyan); box-shadow: 0 0 14px var(--cyan); }
+  .t-node.anomaly.active::before { background: var(--alert); box-shadow: 0 0 14px var(--alert); }
+  .t-date { font-family: var(--mono); font-size: 11px; color: var(--cyan); letter-spacing: 0.1em; }
+  .t-node.anomaly .t-date { color: var(--alert); }
+  .t-label { font-size: 13px; color: var(--steel); margin-top: 3px; line-height: 1.5; }
+  .t-badge { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--alert); border: 1px solid rgba(255,214,107,0.35); padding: 2px 7px; display: inline-block; margin-top: 7px; }
+
+  /* pane 2 — comparison cards */
+  .cards { padding: 24px 22px 50px; display: flex; flex-direction: column; gap: 30px; }
+  .case { border: 1px solid var(--line); background: var(--navy-2); opacity: 0; transform: translateY(26px); }
+  .case.in { opacity: 1; transform: none; transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1); }
+  .case.spotlit { border-color: var(--line-hard); box-shadow: 0 0 44px rgba(53,224,255,0.1); }
+  .case-head { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+  .case-head h3 { font-size: 15px; font-weight: 500; letter-spacing: 0.04em; }
+  .case-head .id { font-family: var(--mono); font-size: 10px; color: var(--cyan-dim); letter-spacing: 0.2em; }
+  .duel { display: grid; grid-template-columns: 1fr 1fr; }
+  .cell { padding: 18px; font-size: 13.5px; line-height: 1.7; }
+  .cell .who { font-family: var(--mono); font-size: 9px; letter-spacing: 0.26em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .cell.alibi { background: var(--alert-bg); border-right: 1px solid var(--line); color: #efe3c0; }
+  .cell.alibi .who { color: var(--alert); }
+  .cell.alibi .who::before { content: "▲"; font-size: 8px; }
+  .cell.truth { background: var(--truth-bg); color: #d3ecf7; }
+  .cell.truth .who { color: var(--cyan); }
+  .cell.truth .who::before { content: "■"; font-size: 8px; }
+  .cell q { font-style: italic; display: block; quotes: "“" "”"; }
+  .delta {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; color: var(--alert);
+    border-top: 1px dashed rgba(255,214,107,0.3); padding: 11px 18px;
+    background: rgba(255,214,107,0.03);
+  }
+  .delta b { color: var(--white); }
+
+  /* mini map */
+  .map { border-top: 1px solid var(--line); position: relative; background: #071022; }
+  .map svg { display: block; width: 100%; height: 150px; }
+  .map .cap { position: absolute; bottom: 8px; left: 12px; font-family: var(--mono); font-size: 9px; color: var(--cyan-dim); letter-spacing: 0.18em; }
+  .ping { animation: ping 2.2s ease-out infinite; transform-origin: center; transform-box: fill-box; }
+  @keyframes ping { 0% { transform: scale(0.4); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
+
+  /* heat strip */
+  .heat { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; padding: 12px 18px 16px; border-top: 1px solid var(--line); }
+  .heat i { height: 26px; background: var(--c, rgba(53,224,255,0.08)); position: relative; transition: transform 0.18s; }
+  .heat i:hover { transform: scaleY(1.35); }
+  .heat i:hover::after {
+    content: attr(data-t); position: absolute; bottom: 34px; left: 50%; transform: translateX(-50%);
+    background: var(--abyss); border: 1px solid var(--line-hard); color: var(--cyan);
+    font-family: var(--mono); font-size: 9px; padding: 4px 8px; white-space: nowrap; z-index: 5;
+  }
+  .heat-cap { font-family: var(--mono); font-size: 9px; color: var(--steel); letter-spacing: 0.2em; padding: 0 18px 14px; }
+
+  /* pane 3 — evidence drawer */
+  .evidence { padding: 20px 18px 50px; display: flex; flex-direction: column; gap: 16px; }
+  .ev {
+    border: 1px solid var(--line); background: linear-gradient(160deg, #0d1830, #091223);
+    padding: 0; overflow: hidden;
+    transform: translateX(30px); opacity: 0;
+  }
+  .ev.in { transform: none; opacity: 1; transition: 0.7s cubic-bezier(0.22,1,0.36,1); }
+  .ev-head { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; color: var(--cyan); padding: 11px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; }
+  .ev-head .k { color: var(--steel); }
+  .ev-body { padding: 14px; font-size: 12.5px; color: var(--steel); line-height: 1.65; }
+  .msg { background: #0a1626; border: 1px solid var(--line); border-radius: 10px 10px 10px 2px; padding: 10px 13px; margin: 8px 0; font-size: 12.5px; color: #cfe3f5; max-width: 92%; }
+  .msg.out { border-radius: 10px 10px 2px 10px; margin-left: auto; background: rgba(53,224,255,0.07); }
+  .msg .mm { display: block; font-family: var(--mono); font-size: 9px; color: var(--cyan-dim); margin-top: 6px; }
+
+  /* audio */
+  .player { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
+  .play {
+    width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line-hard);
+    background: rgba(53,224,255,0.06); color: var(--cyan); cursor: pointer; font-size: 13px;
+    display: grid; place-items: center; transition: all 0.25s; flex-shrink: 0;
+  }
+  .play:hover { background: rgba(53,224,255,0.15); box-shadow: 0 0 18px rgba(53,224,255,0.3); }
+  .wf { flex: 1; height: 44px; cursor: pointer; }
+  .p-time { font-family: var(--mono); font-size: 10px; color: var(--steel); width: 40px; text-align: right; }
+
+  /* ---------- ledger portal ---------- */
+  .ledger {
+    max-width: 900px; margin: 0 auto 90px; border: 1px solid var(--line-hard);
+    background: linear-gradient(170deg, var(--navy-2), var(--navy));
+    box-shadow: 0 40px 90px rgba(0,0,0,0.5), 0 0 60px rgba(53,224,255,0.06);
+    padding: clamp(26px, 5vw, 56px); position: relative; overflow: hidden;
+  }
+  .ledger::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
+  .ledger h2 { font-size: clamp(24px, 3.4vw, 38px); font-weight: 300; }
+  .ledger h2 b { font-weight: 600; }
+  .ledger > p { color: var(--steel); font-size: 14px; margin: 14px 0 30px; max-width: 560px; line-height: 1.75; }
+  .ledger label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.24em; color: var(--cyan); display: block; margin: 20px 0 8px; }
+  .ledger input, .ledger textarea {
+    width: 100%; background: rgba(5,10,22,0.7); border: 1px solid var(--line);
+    color: var(--white); font-family: var(--sans); font-size: 14px; padding: 13px 15px;
+    outline: none; transition: border 0.25s, box-shadow 0.25s;
+  }
+  .ledger textarea { min-height: 84px; resize: vertical; }
+  .ledger input:focus, .ledger textarea:focus { border-color: var(--cyan-dim); box-shadow: 0 0 20px rgba(53,224,255,0.12); }
+  .compile {
+    margin-top: 30px; font-family: var(--mono); font-size: 13px; letter-spacing: 0.18em;
+    background: var(--cyan); color: var(--abyss); border: none; padding: 16px 34px;
+    cursor: pointer; font-weight: 600; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 0 30px rgba(53,224,255,0.25);
+  }
+  .compile:hover { transform: translateY(-2px); box-shadow: 0 6px 44px rgba(53,224,255,0.45); }
+  .compile:active { transform: translateY(1px); }
+  .compile-note { font-family: var(--mono); font-size: 10px; color: var(--steel); margin-top: 12px; letter-spacing: 0.1em; }
+
+  footer { text-align: center; padding: 30px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--steel); border-top: 1px solid var(--line); }
+  footer a { color: var(--cyan-dim); }
+
+  /* ---------- print: the sanity record ---------- */
+  #printroot { display: none; }
+  @media print {
+    body > *:not(#printroot) { display: none !important; }
+    body { background: #fff; }
+    #printroot { display: block; font-family: Georgia, serif; color: #111; padding: 40px; }
+    #printroot h1 { font-size: 26px; letter-spacing: 0.06em; border-bottom: 3px double #111; padding-bottom: 14px; }
+    #printroot .stamp { font-family: monospace; font-size: 11px; color: #555; margin: 10px 0 30px; }
+    #printroot h2 { font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; color: #666; margin: 30px 0 8px; }
+    #printroot p.fact { font-size: 16px; line-height: 1.7; border-left: 3px solid #111; padding-left: 16px; margin: 12px 0; }
+    #printroot .foot { margin-top: 50px; font-size: 11px; color: #777; font-style: italic; }
+  }
+
+  @media (max-width: 1100px) {
+    .matrix { grid-template-columns: 240px 1fr; }
+    .pane.p3 { grid-column: 1 / -1; min-height: auto; }
+    .evidence { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  }
+  @media (max-width: 720px) {
+    .matrix { grid-template-columns: 1fr; }
+    .pane { min-height: auto; }
+    .pane-head { position: static; }
+    .duel { grid-template-columns: 1fr; }
+    .cell.alibi { border-right: none; border-bottom: 1px solid var(--line); }
+    .fiction-tag { margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scanline, .ping { animation: none !important; }
+    .t-node, .case, .ev { transition: opacity 0.2s !important; transform: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<header>
+  <div class="sigil"></div>
+  <h1>THE <span>DISCREPANCY</span> MATRIX</h1>
+  <span class="case-tag">CASE FILE TR-07 · “S. &amp; J.”</span>
+  <span class="fiction-tag">A FORENSIC FICTION — ALL RECORDS INVENTED</span>
+</header>
+
+<section class="intro">
+  <h2>Alibis are stories.<br><b>Records are geometry.</b></h2>
+  <p>
+    This directory audits one fictional case — the parallel accounts of <b style="color:var(--white)">Stacey</b> and
+    <b style="color:var(--white)">Jared</b> — by placing every stated alibi beside the empirical
+    record it must survive. Stories flex. Geometry does not.
+  </p>
+  <p class="protocol">PROTOCOL: SELECT A TIMELINE NODE ▸ AUDIT THE DUEL ▸ CROSS-EXAMINE THE EVIDENCE</p>
+</section>
+
+<div class="matrix">
+  <!-- PANE 1 · TIMELINE -->
+  <div class="pane p1">
+    <div class="pane-head">CHRONOLOGY OF ANOMALIES <span class="cnt" id="tcount"></span></div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <!-- PANE 2 · DUELS -->
+  <div class="pane p2">
+    <div class="pane-head">ALIBI ⇄ EMPIRICAL RECORD <span class="cnt">DUAL-ENTRY AUDIT</span></div>
+    <div class="cards" id="cards"></div>
+  </div>
+
+  <!-- PANE 3 · EVIDENCE -->
+  <div class="pane p3">
+    <div class="pane-head">EVIDENCE LOCKER <span class="cnt">SLIDE-OUT ARCHIVE</span></div>
+    <div class="evidence" id="evidence"></div>
+  </div>
+</div>
+
+<!-- SELF-TRUST LEDGER -->
+<section class="ledger" id="ledger">
+  <h2>The <b>Self-Trust</b> Ledger</h2>
+  <p>
+    The audit above is fiction. This part is not. When reality is being negotiated around you,
+    the antidote is a private record in your own hand. Log three things you directly witnessed —
+    not interpretations, not accusations, just observations — and what your body registered.
+    Compile it. Print it. Keep it somewhere the negotiation can't reach.
+  </p>
+  <label>OBSERVED FACT 01</label>
+  <input id="f1" placeholder="e.g. On Tuesday I saw the car in the driveway at 9:40 pm." maxlength="300">
+  <label>OBSERVED FACT 02</label>
+  <input id="f2" placeholder="Something you saw or heard directly, in plain words." maxlength="300">
+  <label>OBSERVED FACT 03</label>
+  <input id="f3" placeholder="One more. Small is fine. True is the only requirement." maxlength="300">
+  <label>SOMATIC RECORD — WHAT DID YOUR BODY SAY?</label>
+  <textarea id="soma" placeholder="e.g. Tight chest when the story changed. Shoulders dropped when I wrote it down." maxlength="600"></textarea>
+  <button class="compile" id="compile">[ COMPILE SANITY RECORD ]</button>
+  <p class="compile-note">COMPILES LOCALLY INTO A PRINT-READY DOCUMENT · NOTHING IS UPLOADED, STORED, OR TRANSMITTED</p>
+</section>
+
+<footer>
+  THE DISCREPANCY MATRIX · A FORENSIC FICTION · ALL NAMES, DATES, COORDINATES &amp; RECORDS ARE INVENTED ·
+  BUILT WITH CLAUDE CODE · <a href="../guide/">DEPLOYMENT GUIDE</a>
+</footer>
+
+<div id="printroot" aria-hidden="true"></div>
+
+<script>
+/* ============================================================
+   THE DISCREPANCY MATRIX — audit engine (fictional dataset)
+   ============================================================ */
+const DATA = [
+  {
+    id: "TR-07/A1", date: "MAR 03 · 21:14", label: "The late shift that payroll never saw", anomaly: true,
+    title: "The Overtime Alibi",
+    alibi: { who: "STACEY · STATED", text: "I was at the office until midnight — you can ask literally anyone on the team. Big release week." },
+    truth: { who: "EMPIRICAL RECORD", text: "Building access log shows badge-out at 18:47. Phone geodata places the device 22 km north of the office from 20:05 onward, stationary for 3 h 41 m." },
+    delta: "DISCREPANCY: <b>5 h 13 m</b> unaccounted · location variance <b>22.4 km</b>",
+    map: { path: "M20,110 C60,88 90,96 128,60 S 210,38 262,52", ping: [262, 52], from: [20, 110], cap: "GEOTRACE · OFFICE → RIDGELINE OVERLOOK (INVENTED COORDS)" },
+    evidence: {
+      kind: "MESSAGE FRAGMENT", key: "EXHIBIT A-01",
+      html: `<div class="msg">Working late again 😩 don't wait up<span class="mm">21:16 · to home</span></div>
+             <div class="msg out">Almost there. Same spot?<span class="mm">21:19 · to “J”</span></div>`
+    },
+    heatSeed: 3
+  },
+  {
+    id: "TR-07/B2", date: "MAR 11 · 07:52", label: "A gym session with no heartbeat data", anomaly: true,
+    title: "The Morning Routine",
+    alibi: { who: "JARED · STATED", text: "Gym, then straight to work. Same as every Tuesday. Why are you being weird about it?" },
+    truth: { who: "EMPIRICAL RECORD", text: "Fitness tracker logs zero activity 06:00–09:00. Vehicle telemetry: ignition 07:31, route terminating at Harbor View parking structure — 11 km opposite direction from both gym and office." },
+    delta: "DISCREPANCY: activity log <b>null</b> · route inversion <b>180°</b>",
+    map: { path: "M30,50 C80,70 120,110 170,96 S 240,70 268,98", ping: [268, 98], from: [30, 50], cap: "TELEMETRY · HOME → HARBOR VIEW P3 (INVENTED COORDS)" },
+    evidence: {
+      kind: "AUDIO LOG", key: "EXHIBIT B-04",
+      audio: { dur: 14, f: [180, 240, 160], label: "Voicemail fragment · 08:02 · tone analysis: rehearsed cadence" }
+    },
+    heatSeed: 7
+  },
+  {
+    id: "TR-07/C3", date: "MAR 19 · 22:40", label: "Two phones, one restaurant, zero coincidence", anomaly: true,
+    title: "The Parallel Receipts",
+    alibi: { who: "STACEY · STATED", text: "Girls' dinner. Just the four of us. Jared? No idea what he was doing — probably gaming." },
+    truth: { who: "EMPIRICAL RECORD", text: "Card settlement: table for two, single check, 22:41, Via Lucciola. Jared's device pings the same cell sector 22:09–23:56. The 'four of us' group chat shows no dinner planned that week." },
+    delta: "DISCREPANCY: party size <b>4 → 2</b> · co-location probability <b>99.2%</b>",
+    map: { path: "M24,96 C70,60 150,54 190,64 S 250,90 272,66", ping: [272, 66], from: [24, 96], cap: "CO-LOCATION · SECTOR 114-C · VIA LUCCIOLA (INVENTED COORDS)" },
+    evidence: {
+      kind: "LEDGER EXTRACT", key: "EXHIBIT C-02",
+      html: `<div class="ev-body" style="padding:0">
+        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px">
+          <tr style="color:var(--cyan)"><td style="padding:6px 4px;border-bottom:1px solid var(--line)">22:41</td><td style="border-bottom:1px solid var(--line)">VIA LUCCIOLA</td><td style="border-bottom:1px solid var(--line);text-align:right">COVERS: 2</td></tr>
+          <tr><td style="padding:6px 4px">22:09</td><td>SECTOR 114-C PING · DEVICE “J”</td><td style="text-align:right">MATCH</td></tr>
+          <tr><td style="padding:6px 4px">23:56</td><td>SECTOR 114-C LAST PING</td><td style="text-align:right">MATCH</td></tr>
+        </table></div>`
+    },
+    heatSeed: 11
+  },
+  {
+    id: "TR-07/D4", date: "MAR 27 · 01:03", label: "The synchronized story, delivered twice", anomaly: true,
+    title: "The Rehearsed Chorus",
+    alibi: { who: "BOTH · STATED", text: "We barely even talk. Honestly you're imagining a connection that isn't there. That's what hurts most." },
+    truth: { who: "EMPIRICAL RECORD", text: "Both accounts use the identical 11-word phrase — 'imagining a connection that isn't there' — within a 9-minute window, in separate conversations. Linguistic collision probability under independence: 1 in 2.1 million." },
+    delta: "DISCREPANCY: independent invention <b>implausible</b> · coordination <b>indicated</b>",
+    map: { path: "M28,70 C90,40 120,100 168,72 S 236,44 270,80", ping: [270, 80], from: [28, 70], cap: "LINGUISTIC COLLISION MAP · PHRASE Δt = 9 MIN" },
+    evidence: {
+      kind: "AUDIO LOG", key: "EXHIBIT D-07",
+      audio: { dur: 11, f: [220, 150, 260], label: "Call fragment · 01:07 · phrase match highlighted" }
+    },
+    heatSeed: 17
+  },
+  {
+    id: "TR-07/E5", date: "APR 02 · 19:30", label: "Control point: an evening that reconciles", anomaly: false,
+    title: "The Clean Baseline",
+    alibi: { who: "STACEY · STATED", text: "Home by 7:30, made dinner, watched the documentary about volcanoes." },
+    truth: { who: "EMPIRICAL RECORD", text: "All streams agree: geodata home 19:24, thermostat occupancy confirmed, streaming history logs the volcano documentary 20:11–21:47. The instrument is calibrated — when the story is true, the matrix goes quiet." },
+    delta: "DISCREPANCY: <b>NONE</b> · baseline integrity confirmed",
+    map: { path: "M24,84 C90,80 180,86 272,82", ping: [272, 82], from: [24, 84], cap: "GEOTRACE · FLAT LINE · ALL SOURCES RECONCILE" },
+    evidence: {
+      kind: "SYSTEM NOTE", key: "CONTROL-01",
+      html: `<div class="ev-body">A matrix that only ever convicts is a weapon, not an instrument.
+      This control entry exists so the reader can see what <span style="color:var(--cyan)">agreement</span> looks like —
+      and therefore trust what disagreement means.</div>`
+    },
+    heatSeed: 23
+  }
+];
+
+const $ = id => document.getElementById(id);
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* sticky pane headers sit exactly under the real (possibly wrapped) header */
+function setHdr() {
+  document.documentElement.style.setProperty("--hdr", document.querySelector("header").offsetHeight + "px");
+}
+setHdr(); addEventListener("resize", setHdr);
+
+/* ---------- build panes ---------- */
+const tl = $("timeline"), cards = $("cards"), evd = $("evidence");
+DATA.forEach((d, i) => {
+  tl.insertAdjacentHTML("beforeend", `
+    <div class="t-node ${d.anomaly ? "anomaly" : ""}" data-i="${i}" role="button" tabindex="0" aria-label="${d.title}">
+      <div class="t-date">${d.date}</div>
+      <div class="t-label">${d.label}</div>
+      ${d.anomaly ? '<span class="t-badge">ANOMALY</span>' : '<span class="t-badge" style="color:var(--cyan);border-color:var(--line-hard)">CONTROL</span>'}
+    </div>`);
+
+  const heat = Array.from({ length: 24 }, (_, h) => {
+    const v = Math.pow(Math.abs(Math.sin(h * d.heatSeed * 0.7 + d.heatSeed)), 2.2) * (d.anomaly ? 1 : 0.16);
+    const col = v < 0.18 ? `rgba(53,224,255,${0.05 + v * 0.3})` : v < 0.55 ? `rgba(255,214,107,${0.14 + v * 0.4})` : `rgba(255,120,90,${0.25 + v * 0.5})`;
+    return `<i style="--c:${col}" data-t="${String(h).padStart(2, "0")}:00 · σ ${v.toFixed(2)}"></i>`;
+  }).join("");
+
+  cards.insertAdjacentHTML("beforeend", `
+    <article class="case" id="case-${i}">
+      <div class="case-head"><h3>${d.title}</h3><span class="id">${d.id}</span></div>
+      <div class="duel">
+        <div class="cell alibi"><div class="who">${d.alibi.who} — FABRICATED ALIBI</div><q>${d.alibi.text}</q></div>
+        <div class="cell truth"><div class="who">${d.truth.who}</div>${d.truth.text}</div>
+      </div>
+      <div class="delta">Δ ${d.delta}</div>
+      <div class="map">
+        <svg viewBox="0 0 292 150" preserveAspectRatio="none" aria-label="Stylized route map (fictional)">
+          <defs><pattern id="gp${i}" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M20 0H0V20" fill="none" stroke="rgba(53,224,255,0.08)" stroke-width="0.6"/></pattern></defs>
+          <rect width="292" height="150" fill="url(#gp${i})"/>
+          <path d="${d.map.path}" fill="none" stroke="rgba(53,224,255,0.55)" stroke-width="1.4" stroke-dasharray="4 5" class="route" pathLength="100"/>
+          <circle cx="${d.map.from[0]}" cy="${d.map.from[1]}" r="3.5" fill="rgba(233,242,251,0.8)"/>
+          <circle cx="${d.map.ping[0]}" cy="${d.map.ping[1]}" r="4" fill="${d.anomaly ? "#ffd66b" : "#35e0ff"}"/>
+          <circle cx="${d.map.ping[0]}" cy="${d.map.ping[1]}" r="8" fill="none" stroke="${d.anomaly ? "#ffd66b" : "#35e0ff"}" stroke-width="1" class="ping"/>
+        </svg>
+        <span class="cap">${d.map.cap}</span>
+      </div>
+      <div class="heat">${heat}</div>
+      <div class="heat-cap">SIGNAL DIVERGENCE BY HOUR · HOVER CELLS FOR σ</div>
+    </article>`);
+
+  const ev = d.evidence;
+  evd.insertAdjacentHTML("beforeend", `
+    <div class="ev" data-i="${i}">
+      <div class="ev-head">${ev.kind}<span class="k">${ev.key}</span></div>
+      ${ev.audio ? `
+        <div class="ev-body">
+          <div class="player" data-dur="${ev.audio.dur}" data-f="${ev.audio.f.join(",")}">
+            <button class="play" aria-label="Play audio exhibit">▶</button>
+            <canvas class="wf"></canvas>
+            <span class="p-time">0:${String(ev.audio.dur).padStart(2, "0")}</span>
+          </div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--steel);letter-spacing:0.08em;margin-top:8px">${ev.audio.label}</div>
+        </div>` : (ev.html.startsWith("<div class=\"ev-body\"") ? ev.html : `<div class="ev-body">${ev.html}</div>`)}
+    </div>`);
+});
+$("tcount").textContent = DATA.length + " NODES";
+
+/* ---------- route draw-in ---------- */
+document.querySelectorAll(".route").forEach(r => {
+  r.style.strokeDashoffset = 100; r.style.strokeDasharray = "100";
+});
+
+/* ---------- reveals + spotlight sync ---------- */
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) {
+    e.target.classList.add("in");
+    const route = e.target.querySelector?.(".route");
+    if (route && !RM) route.animate([{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }], { duration: 1600, easing: "cubic-bezier(0.22,1,0.36,1)", fill: "forwards" });
+    else if (route) route.style.strokeDashoffset = 0;
+  }
+}), { threshold: 0.15 });
+document.querySelectorAll(".case, .ev, .t-node").forEach(el => io.observe(el));
+
+function focusCase(i) {
+  document.querySelectorAll(".t-node").forEach(n => n.classList.toggle("active", +n.dataset.i === i));
+  document.querySelectorAll(".case").forEach(c => c.classList.remove("spotlit"));
+  const c = $("case-" + i);
+  c.classList.add("spotlit");
+  c.scrollIntoView({ behavior: RM ? "auto" : "smooth", block: "center" });
+}
+tl.addEventListener("click", e => { const n = e.target.closest(".t-node"); if (n) focusCase(+n.dataset.i); });
+tl.addEventListener("keydown", e => {
+  const n = e.target.closest(".t-node");
+  if (n && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); focusCase(+n.dataset.i); }
+});
+
+/* ---------- synthetic audio exhibits (WebAudio, fully generated) ---------- */
+let AC = null;
+document.querySelectorAll(".player").forEach(pl => {
+  const canvas = pl.querySelector(".wf"), px = canvas.getContext("2d");
+  const dur = +pl.dataset.dur, freqs = pl.dataset.f.split(",").map(Number);
+  const bars = 64;
+  const shape = Array.from({ length: bars }, (_, i) =>
+    0.25 + 0.75 * Math.abs(Math.sin(i * 0.4 + freqs[0]) * Math.sin(i * 0.09 + freqs[1] * 0.01)));
+  let playing = false, t0 = 0, raf;
+
+  function draw(progress = 0) {
+    const r = canvas.getBoundingClientRect();
+    canvas.width = r.width * 2; canvas.height = r.height * 2;
+    const bw = canvas.width / bars;
+    px.clearRect(0, 0, canvas.width, canvas.height);
+    shape.forEach((v, i) => {
+      const on = i / bars <= progress;
+      px.fillStyle = on ? "#35e0ff" : "rgba(143,163,191,0.35)";
+      const h = v * canvas.height * 0.86;
+      px.fillRect(i * bw + 1, (canvas.height - h) / 2, bw - 2, h);
+    });
+  }
+  draw();
+  addEventListener("resize", () => draw());
+
+  pl.querySelector(".play").addEventListener("click", () => {
+    if (playing) return;
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const now = AC.currentTime;
+    /* muffled voice-like murmur: detuned oscillators through lowpass + slow tremolo */
+    const master = AC.createGain(); master.gain.value = 0.0001; master.connect(AC.destination);
+    master.gain.exponentialRampToValueAtTime(0.11, now + 0.4);
+    master.gain.setValueAtTime(0.11, now + dur - 0.6);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    const lp = AC.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 520; lp.connect(master);
+    const trem = AC.createGain(); trem.connect(lp);
+    const lfo = AC.createOscillator(); lfo.frequency.value = 2.1;
+    const lfoG = AC.createGain(); lfoG.gain.value = 0.4;
+    lfo.connect(lfoG); lfoG.connect(trem.gain); lfo.start(now); lfo.stop(now + dur);
+    freqs.forEach(f => {
+      const o = AC.createOscillator(); o.type = "sawtooth"; o.frequency.value = f;
+      o.frequency.setTargetAtTime(f * 0.82, now + dur * 0.4, 2);
+      const og = AC.createGain(); og.gain.value = 0.33;
+      o.connect(og); og.connect(trem); o.start(now); o.stop(now + dur);
+    });
+    playing = true; t0 = performance.now();
+    const timeEl = pl.querySelector(".p-time");
+    (function tick() {
+      const el = (performance.now() - t0) / 1000;
+      draw(Math.min(1, el / dur));
+      timeEl.textContent = "0:" + String(Math.max(0, Math.ceil(dur - el))).padStart(2, "0");
+      if (el < dur) raf = requestAnimationFrame(tick);
+      else { playing = false; draw(0); timeEl.textContent = "0:" + String(dur).padStart(2, "0"); }
+    })();
+  });
+});
+
+/* ---------- sanity record compiler ---------- */
+$("compile").addEventListener("click", () => {
+  const facts = ["f1", "f2", "f3"].map(id => $(id).value.trim()).filter(Boolean);
+  const soma = $("soma").value.trim();
+  if (!facts.length) { $("f1").focus(); $("f1").placeholder = "Start here — one thing you know you saw."; return; }
+  const stamp = new Date().toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" });
+  $("printroot").innerHTML = `
+    <h1>SANITY RECORD</h1>
+    <div class="stamp">COMPILED ${stamp} · WITNESSED &amp; RECORDED IN MY OWN HAND · PRIVATE</div>
+    <h2>Observed Facts</h2>
+    ${facts.map((f, i) => `<p class="fact"><b>${i + 1}.</b> ${f.replace(/</g, "&lt;")}</p>`).join("")}
+    ${soma ? `<h2>Somatic Record</h2><p class="fact">${soma.replace(/</g, "&lt;")}</p>` : ""}
+    <h2>Declaration</h2>
+    <p class="fact">I witnessed these things. Writing them down does not make me unkind, disloyal, or unwell. It makes me a reliable narrator of my own life.</p>
+    <div class="foot">Compiled locally by The Discrepancy Matrix — a forensic fiction. This page belongs to its author alone.</div>`;
+  window.print();
+});
+
+/* ---------- iteration log ---------- */
+console.log(`%c
+THE DISCREPANCY MATRIX — BUILD ITERATION LOG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASS 1 · STRUCTURE AUDIT
+  · dataset externalized to a single DATA array — panes render from one source of truth
+  · added CONTROL entry (E5): an instrument that can agree is an instrument you can trust
+  · timeline ⇄ card ⇄ evidence linked by index; focusCase() drives spotlight + scroll
+PASS 2 · MOTION & FEEL AUDIT
+  · SVG routes draw in via pathLength=100 dash animation, 1.6s decel curve
+  · heat cells scaleY on hover with σ tooltip; ping markers pulse at 2.2s
+  · audio exhibits are 100% synthesized (saw stack → lowpass → tremolo) — no recordings exist
+PASS 3 · ACCESS & RESPONSIVE AUDIT
+  · ≤1100px: evidence locker reflows to grid below matrix; ≤720px: single column, duel stacks
+  · timeline nodes keyboard-operable; reduced-motion kills scanline/ping/route animation
+  · print stylesheet isolates #printroot — the Sanity Record prints clean serif on white
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, "color:#35e0ff");
+</script>
+</body>
+</html>

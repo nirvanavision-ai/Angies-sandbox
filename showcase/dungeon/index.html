@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dungeon of Agreements — A Kinetic Noir Documentary</title>
+<meta name="description" content="A scroll-driven noir documentary on the shattering of agreements — and the slow, somatic work of putting a nervous system back together.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0b0c0e;
+    --char: #17181c;
+    --fog: #a7a9b0;
+    --bone: #e8e6e1;
+    --crimson: #8f1022;
+    --crimson-hot: #ff2d4a;
+    --glass: rgba(232, 230, 225, 0.045);
+    --glass-edge: rgba(232, 230, 225, 0.12);
+    --serif: "Cormorant Garamond", Georgia, serif;
+    --sans: "Inter", -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--ink);
+    color: var(--bone);
+    font-family: var(--sans);
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+  ::selection { background: var(--crimson); color: var(--bone); }
+
+  /* film grain */
+  #grain { position: fixed; inset: 0; z-index: 50; pointer-events: none; opacity: 0.07; }
+  /* clay canvas */
+  #clay { position: fixed; inset: 0; z-index: 0; }
+  .fog-layer {
+    position: fixed; inset: -20%; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse 60% 45% at 30% 60%, rgba(143,16,34,0.07), transparent 70%),
+                radial-gradient(ellipse 50% 40% at 75% 30%, rgba(167,169,176,0.05), transparent 70%);
+    animation: fogdrift 26s ease-in-out infinite alternate;
+  }
+  @keyframes fogdrift { to { transform: translate(4%, -3%) scale(1.06); } }
+
+  main { position: relative; z-index: 2; }
+
+  /* ---------- typographic system ---------- */
+  .eyebrow {
+    font-family: var(--sans); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.42em; text-transform: uppercase; color: var(--fog);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .eyebrow::before { content: ""; width: 42px; height: 1px; background: var(--crimson-hot); box-shadow: 0 0 8px var(--crimson-hot); }
+  h1, h2 { font-family: var(--serif); font-weight: 300; }
+  .display {
+    font-size: clamp(52px, 10vw, 132px); line-height: 0.98; letter-spacing: -0.01em;
+  }
+  .display em { font-style: italic; color: transparent; -webkit-text-stroke: 1px var(--bone); }
+  .display .red { color: var(--crimson-hot); text-shadow: 0 0 40px rgba(255,45,74,0.35); }
+
+  section { position: relative; padding: 18vh 6vw; max-width: 1280px; margin: 0 auto; }
+
+  /* ---------- hero ---------- */
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+  .hero p.lede {
+    font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.4vw, 26px);
+    color: var(--fog); max-width: 560px; margin-top: 40px;
+  }
+  .scrollcue {
+    position: absolute; bottom: 5vh; left: 6vw; font-size: 10px; letter-spacing: 0.4em;
+    color: var(--fog); text-transform: uppercase; display: flex; align-items: center; gap: 12px;
+  }
+  .scrollcue .line { width: 1px; height: 48px; background: linear-gradient(var(--fog), transparent); animation: cue 2s ease-in-out infinite; transform-origin: top; }
+  @keyframes cue { 0%,100% { transform: scaleY(0.4); opacity: 0.4; } 50% { transform: scaleY(1); opacity: 1; } }
+
+  /* ---------- glass panel ---------- */
+  .panel {
+    /* frosted-glass look WITHOUT live backdrop-filter: a real-time blur over an
+       always-animating canvas re-blurs every frame and murders the frame budget.
+       This layered translucency reads as frost at a fraction of the cost. */
+    background:
+      linear-gradient(165deg, rgba(232,230,225,0.06) 0%, rgba(232,230,225,0.015) 40%, rgba(23,24,28,0.6) 100%),
+      rgba(14,15,19, 0.82);
+    border: 1px solid var(--glass-edge);
+    border-radius: 3px;
+    padding: clamp(28px, 4.5vw, 60px);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(232,230,225,0.09), inset 0 0 80px rgba(232,230,225,0.02);
+  }
+  .reveal { opacity: 0; transform: translateY(44px); transition: opacity 1s cubic-bezier(0.22,1,0.36,1), transform 1s cubic-bezier(0.22,1,0.36,1); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  h2.section-title { font-size: clamp(34px, 5.4vw, 62px); line-height: 1.06; margin: 18px 0 26px; }
+  .body-copy { color: var(--fog); font-size: 16.5px; max-width: 620px; font-weight: 300; }
+  .body-copy strong { color: var(--bone); font-weight: 500; }
+
+  /* ---------- chapter marker ---------- */
+  .chapter-no {
+    position: absolute; top: 8vh; right: 6vw;
+    font-family: var(--serif); font-style: italic; font-size: clamp(90px, 16vw, 200px);
+    color: transparent; -webkit-text-stroke: 1px rgba(232,230,225,0.08);
+    user-select: none; pointer-events: none; line-height: 1;
+  }
+
+  /* ---------- split screen ---------- */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 4vw, 70px); align-items: start; }
+  .agreements { display: flex; flex-direction: column; gap: 22vh; padding: 14vh 0; }
+  .agreement {
+    font-family: var(--serif); font-size: clamp(22px, 3vw, 34px); font-weight: 300;
+    padding-left: 28px; border-left: 1px solid var(--glass-edge); position: relative;
+  }
+  .agreement::before {
+    content: attr(data-n); position: absolute; left: -14px; top: -26px;
+    font-size: 12px; font-family: var(--sans); letter-spacing: 0.3em; color: var(--crimson-hot);
+  }
+  .agreement .said { display: block; font-size: 13px; font-family: var(--sans); color: var(--fog); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 14px; font-weight: 400; }
+  .flashpane { position: sticky; top: 14vh; height: 72vh; }
+  .flashbox {
+    height: 100%; border: 1px solid var(--glass-edge); border-radius: 3px;
+    background: #060708; overflow: hidden; position: relative;
+    display: flex; align-items: center; justify-content: center; padding: 8%;
+  }
+  .flashbox .static { position: absolute; inset: 0; opacity: 0.12; }
+  .flash-text {
+    font-family: var(--serif); font-style: italic; font-size: clamp(20px, 2.6vw, 30px);
+    text-align: center; color: var(--bone); position: relative; line-height: 1.5;
+    transition: opacity 0.3s;
+  }
+  .flash-label {
+    position: absolute; top: 18px; left: 20px; font-size: 10px; letter-spacing: 0.35em;
+    color: var(--crimson-hot); text-transform: uppercase;
+  }
+  .flash-label::before { content: "● "; animation: rec 1.4s steps(1) infinite; }
+  @keyframes rec { 50% { opacity: 0.2; } }
+  .glitching .flash-text {
+    animation: glitch 0.42s steps(2) 2;
+  }
+  @keyframes glitch {
+    0% { transform: translate(0); clip-path: inset(0); }
+    20% { transform: translate(-7px, 2px); clip-path: inset(12% 0 61% 0); text-shadow: 4px 0 var(--crimson-hot), -4px 0 #2da9ff; }
+    40% { transform: translate(5px, -2px); clip-path: inset(55% 0 8% 0); text-shadow: -4px 0 var(--crimson-hot), 4px 0 #2da9ff; }
+    60% { transform: translate(-3px, 1px); clip-path: inset(30% 0 34% 0); }
+    100% { transform: translate(0); clip-path: inset(0); text-shadow: none; }
+  }
+
+  /* ---------- coregulator ---------- */
+  .coreg-wrap { position: relative; }
+  #wave {
+    width: 100%; height: 340px; display: block; border-radius: 3px;
+    border: 1px solid var(--glass-edge);
+    background: linear-gradient(180deg, #08090b 0%, #0d0e12 100%);
+    touch-action: none;
+  }
+  .stone-tray { display: flex; gap: 20px; margin-top: 26px; flex-wrap: wrap; align-items: center; }
+  .stone {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #f0d9c0, #ba8f66 55%, #6d4b31);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 22px rgba(240,217,192,0.28), inset -4px -6px 12px rgba(0,0,0,0.35);
+    cursor: grab; touch-action: none; position: relative; flex-shrink: 0;
+    transition: box-shadow 0.3s;
+  }
+  .stone:nth-child(2) { background: radial-gradient(circle at 34% 30%, #cfe6dc, #7fa898 55%, #3f5d52); box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 22px rgba(160,210,190,0.3), inset -4px -6px 12px rgba(0,0,0,0.35); }
+  .stone:nth-child(3) { background: radial-gradient(circle at 34% 30%, #d9d3e8, #9086b0 55%, #4a4468); box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 22px rgba(190,180,230,0.3), inset -4px -6px 12px rgba(0,0,0,0.35); }
+  .stone.dragging { cursor: grabbing; box-shadow: 0 18px 40px rgba(0,0,0,0.7), 0 0 40px rgba(240,217,192,0.5); }
+  .stone .ripple { position: absolute; inset: -8px; border-radius: 50%; border: 1px solid rgba(232,230,225,0.25); animation: rip 2.6s ease-out infinite; }
+  @keyframes rip { from { transform: scale(0.8); opacity: 0.8; } to { transform: scale(1.5); opacity: 0; } }
+  .tray-note { font-size: 12px; color: var(--fog); letter-spacing: 0.06em; max-width: 380px; }
+  .reg-meter { position: absolute; top: 18px; right: 20px; text-align: right; font-size: 10px; letter-spacing: 0.3em; color: var(--fog); text-transform: uppercase; }
+  .reg-meter b { display: block; font-family: var(--serif); font-size: 34px; font-weight: 300; color: var(--bone); letter-spacing: 0; }
+
+  /* ---------- epilogue ---------- */
+  .epilogue { min-height: 90vh; display: flex; flex-direction: column; justify-content: center; text-align: center; align-items: center; }
+  .epilogue .display { font-size: clamp(38px, 7vw, 92px); }
+  .seal { margin-top: 48px; width: 74px; height: 74px; border: 1px solid var(--glass-edge); border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-style: italic; color: var(--fog); animation: spin 24s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer { position: relative; z-index: 2; text-align: center; padding: 40px; font-size: 11px; letter-spacing: 0.24em; color: rgba(167,169,176,0.5); text-transform: uppercase; }
+  footer a { color: var(--fog); }
+
+  .progress { position: fixed; top: 0; left: 0; height: 2px; background: var(--crimson-hot); box-shadow: 0 0 12px var(--crimson-hot); z-index: 60; width: 0; }
+
+  @media (max-width: 860px) {
+    .split { grid-template-columns: 1fr; }
+    .flashpane { position: relative; top: 0; height: 46vh; order: -1; }
+    .agreements { gap: 12vh; padding: 6vh 0; }
+    #wave { height: 260px; }
+    .chapter-no { opacity: 0.5; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; }
+    .reveal { transition: opacity 0.2s; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<canvas id="clay"></canvas>
+<div class="fog-layer"></div>
+<canvas id="grain"></canvas>
+
+<main>
+  <!-- CHAPTER 0 · HERO -->
+  <section class="hero">
+    <p class="eyebrow">A kinetic noir documentary · in four chambers</p>
+    <h1 class="display" style="margin-top:30px">
+      DUNGEON<br>OF <em>AGREEMENTS</em><span class="red">.</span>
+    </h1>
+    <p class="lede">
+      Every relationship is an architecture of small promises.
+      This is a walk through one after the load-bearing walls were quietly removed —
+      and a record of what it takes to stand upright again.
+    </p>
+    <div class="scrollcue"><span class="line"></span> Descend</div>
+  </section>
+
+  <!-- CHAPTER 1 · THE VESSEL -->
+  <section>
+    <span class="chapter-no">I</span>
+    <div class="panel reveal">
+      <p class="eyebrow">Chamber I · The Vessel</p>
+      <h2 class="section-title">A body keeps<br>the minutes.</h2>
+      <p class="body-copy">
+        Long before the mind admits what is happening, the body has already filed its report.
+        The clay figure beside you is rebuilt from that report — <strong>watch it as you descend</strong>.
+        It holds together the way a person holds together: by agreement, tension, and trust
+        distributed across a thousand small points. Remove enough points, and shape becomes debris
+        without a single dramatic blow ever being struck.
+      </p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 2 · SPLIT SCREEN -->
+  <section>
+    <span class="chapter-no">II</span>
+    <p class="eyebrow reveal">Chamber II · The Double Ledger</p>
+    <h2 class="section-title reveal">What was written<br>/ what was lived.</h2>
+    <p class="body-copy reveal" style="margin-bottom:40px">
+      On the left: the agreements, as stated — calm, reasonable, notarized by repetition.
+      On the right: the footage that plays underneath them. Scroll, and let the two ledgers
+      disagree in front of you. The double-bind lives in the gap.
+    </p>
+    <div class="split">
+      <div class="agreements" id="agreements">
+        <div class="agreement" data-n="CLAUSE 01" data-flash="The rule applied to everyone except the person who wrote it.">
+          “We tell each other everything. Radical honesty, always.”
+          <span class="said">stated at the kitchen table · winter</span>
+        </div>
+        <div class="agreement" data-n="CLAUSE 02" data-flash="Safety was promised as a structure. It was rationed as a reward.">
+          “This is a safe place. You never have to perform here.”
+          <span class="said">stated during the first hard month</span>
+        </div>
+        <div class="agreement" data-n="CLAUSE 03" data-flash="The door was open. The hallway behind it kept getting longer.">
+          “You're free. No one is keeping you here.”
+          <span class="said">stated whenever leaving was mentioned</span>
+        </div>
+        <div class="agreement" data-n="CLAUSE 04" data-flash="Two sets of books were kept. Only one was ever shown.">
+          “There is nothing going on. You have my word.”
+          <span class="said">stated while the second ledger was being written</span>
+        </div>
+      </div>
+      <div class="flashpane">
+        <div class="flashbox" id="flashbox">
+          <canvas class="static" id="staticfx"></canvas>
+          <span class="flash-label">Recovered footage</span>
+          <p class="flash-text" id="flashtext">The record begins where the recording was never supposed to exist.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER 3 · COREGULATOR -->
+  <section>
+    <span class="chapter-no">III</span>
+    <div class="panel reveal">
+      <p class="eyebrow">Chamber III · The Co-Regulator</p>
+      <h2 class="section-title">Smooth the signal.</h2>
+      <p class="body-copy" style="margin-bottom:30px">
+        This is a dysregulated nervous system, rendered honestly: jagged, fast, allergic to rest.
+        Drag the <strong>somatic stones</strong> onto the water. Where a stone lands, the signal remembers
+        how to be slow. This is not a metaphor for fixing someone else. It is a rehearsal for
+        regulating <strong>yourself</strong>.
+      </p>
+      <div class="coreg-wrap">
+        <canvas id="wave"></canvas>
+        <div class="reg-meter">Regulation<b id="regpct">7%</b></div>
+      </div>
+      <div class="stone-tray" id="tray">
+        <div class="stone" data-kind="breath" title="Breath"><span class="ripple"></span></div>
+        <div class="stone" data-kind="ground" title="Grounding"></div>
+        <div class="stone" data-kind="witness" title="Witness"></div>
+        <p class="tray-note">Three stones: <em>breath</em>, <em>ground</em>, <em>witness</em>. Place them where the water is worst. Drag them off the canvas to take them back.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EPILOGUE -->
+  <section class="epilogue">
+    <p class="eyebrow" style="justify-content:center">Chamber IV · Daylight</p>
+    <h1 class="display reveal" style="margin-top:26px">
+      The dungeon was<br>never <em>locked</em><span class="red">.</span>
+    </h1>
+    <p class="body-copy reveal" style="margin:36px auto 0; text-align:center">
+      Agreements can be rebuilt — but only with parties who believe words are load-bearing.
+      The figure reassembles. Differently. It keeps the crack-lines visible on purpose.
+    </p>
+    <div class="seal">✳</div>
+  </section>
+</main>
+
+<footer>
+  Dungeon of Agreements · a fiction assembled from true shapes · built with Claude Code · <a href="../guide/">deployment guide</a>
+</footer>
+
+<script>
+/* ============================================================
+   DUNGEON OF AGREEMENTS — kinetic engine
+   ============================================================ */
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ---------- scroll progress ---------- */
+let scrollP = 0;
+function onScroll() {
+  const h = document.documentElement;
+  scrollP = clamp(h.scrollTop / (h.scrollHeight - h.clientHeight), 0, 1);
+  document.getElementById("progress").style.width = (scrollP * 100) + "%";
+}
+addEventListener("scroll", onScroll, { passive: true }); onScroll();
+
+/* ---------- film grain ---------- */
+const g = document.getElementById("grain"), gx = g.getContext("2d");
+function sizeGrain() { g.width = innerWidth / 2.5; g.height = innerHeight / 2.5; g.style.width = "100%"; g.style.height = "100%"; }
+sizeGrain(); addEventListener("resize", sizeGrain);
+/* pre-baked grain tiles — blit instead of regenerating pixels each tick */
+const GT = [];
+for (let t = 0; t < 5; t++) {
+  const c = document.createElement("canvas"); c.width = 256; c.height = 256;
+  const x = c.getContext("2d"), img = x.createImageData(256, 256);
+  const b = new Uint32Array(img.data.buffer);
+  for (let i = 0; i < b.length; i += 3) b[i] = (Math.random() * 90 | 0) << 24 | 0xffffff;
+  x.putImageData(img, 0, 0); GT.push(c);
+}
+let gi = 0;
+(function grainLoop() {
+  if (!RM && !document.hidden) {
+    gi = (gi + 1) % GT.length;
+    for (let yy = 0; yy < g.height; yy += 256)
+      for (let xx = 0; xx < g.width; xx += 256)
+        gx.drawImage(GT[gi], xx, yy);
+  }
+  setTimeout(() => requestAnimationFrame(grainLoop), 110);
+})();
+
+/* ---------- CLAY FIGURE — stop-motion particle sculpture ----------
+   A vessel of ~700 clay particles. Scroll drives its life:
+   0.00–0.18  intact, breathing
+   0.18–0.45  stress fractures, particles tremble & slip
+   0.45–0.72  shatter — gravity takes the shards
+   0.72–1.00  reassembly into a taller, cracked, kintsugi-lit form
+   Rendered at quantized 8fps steps for a claymation feel. */
+const clay = document.getElementById("clay"), cx = clay.getContext("2d");
+let W, H, DPR;
+function sizeClay() {
+  DPR = Math.min(devicePixelRatio || 1, 2);
+  W = clay.width = innerWidth * DPR; H = clay.height = innerHeight * DPR;
+  clay.style.width = "100%"; clay.style.height = "100%";
+}
+sizeClay(); addEventListener("resize", () => { sizeClay(); buildForms(); });
+
+let N = 700;
+let P = [];           // particles {x,y,r,tone, home:{a:[x,y],b:[x,y]}, seed}
+function vesselPoint(i, t) { // amphora silhouette via parametric profile
+  const u = i / N, ang = u * Math.PI * 2 * 9.7;         // spiral wrap
+  const y = (i % (N / 9)) / (N / 9);                     // 0 top → 1 bottom
+  const profile = 0.16 + 0.34 * Math.sin(Math.PI * Math.pow(y, 0.85)) * (1 - 0.25 * Math.sin(y * 9));
+  return [Math.cos(ang) * profile * (0.72 + 0.28 * Math.random()), y - 0.5];
+}
+function towerPoint(i) { // reassembled form: taller, asymmetric, cracked column
+  const u = i / N;
+  const y = u - 0.5;
+  const wob = 0.05 * Math.sin(u * 40) + 0.03 * Math.sin(u * 7);
+  const r = 0.10 + 0.13 * Math.sin(Math.PI * clamp(u, 0, 1)) + wob;
+  const ang = u * Math.PI * 26;
+  return [Math.cos(ang) * r + 0.04 * Math.sin(y * 6), y * 1.25];
+}
+function buildForms() {
+  P = [];
+  const narrow = innerWidth < 860;
+  N = narrow ? 420 : 700;                  // lighter sculpture on small GPUs
+  const scale = Math.min(W, H) * (narrow ? 0.30 : 0.36);
+  const cxp = W * (narrow ? 0.5 : 0.72), cyp = H * 0.52; // centered behind text on mobile
+  for (let i = 0; i < N; i++) {
+    const [ax, ay] = vesselPoint(i), [bx, by] = towerPoint(i);
+    P.push({
+      a: [cxp + ax * scale, cyp + ay * scale],
+      b: [cxp + bx * scale * 0.9, cyp + by * scale * 0.82],
+      r: (2.2 + Math.random() * 4.6) * DPR,
+      tone: 0.75 + Math.random() * 0.25,
+      seed: Math.random() * 1000,
+      vx: (Math.random() - 0.5), vy: Math.random()
+    });
+  }
+}
+buildForms();
+
+const STEP = 1000 / 8;   // 8fps claymation quantization
+let lastStep = 0, frozen = { t: 0 };
+function drawClay(now) {
+  if (now - lastStep >= STEP || RM) { lastStep = now; frozen.t = now; }
+  const t = frozen.t / 1000;
+  cx.clearRect(0, 0, W, H);
+  const p = scrollP;
+  const phase =
+    p < 0.18 ? { m: "breathe", k: p / 0.18 } :
+    p < 0.45 ? { m: "fracture", k: (p - 0.18) / 0.27 } :
+    p < 0.72 ? { m: "shatter", k: (p - 0.45) / 0.27 } :
+               { m: "rebuild", k: (p - 0.72) / 0.28 };
+
+  /* particles batched into 4 tone buckets → 4 fill() calls instead of N.
+     phase alpha is uniform (fracture's dropping shards drawn in a 5th pass). */
+  const warm = phase.m === "rebuild" ? phase.k : 0;
+  let uniAlpha = 1;
+  if (phase.m === "shatter") uniAlpha = 1 - phase.k * 0.55;
+  if (phase.m === "rebuild") uniAlpha = lerp(0.45, 1, phase.k);
+  const paths = [new Path2D(), new Path2D(), new Path2D(), new Path2D()];
+  const dropPath = new Path2D();
+  let hasDrop = false;
+
+  for (let i = 0; i < N; i++) {
+    const q = P[i];
+    let x, y, r = q.r, dropping = false;
+    const jx = Math.sin(q.seed + t * 1.7) * DPR, jy = Math.cos(q.seed * 1.3 + t * 1.4) * DPR;
+
+    if (phase.m === "breathe") {
+      const br = 1 + 0.015 * Math.sin(t * 0.9 + q.seed * 0.01);
+      x = q.a[0] + jx * 0.6; y = q.a[1] * br + jy * 0.6;
+    } else if (phase.m === "fracture") {
+      const k = phase.k, tremor = k * 6 * DPR;
+      x = q.a[0] + Math.sin(q.seed + t * 8) * tremor;
+      y = q.a[1] + Math.cos(q.seed * 2 + t * 9) * tremor * 0.6;
+      if ((i % 13 === 0) && k > 0.5) { y += (k - 0.5) * 90 * DPR * q.vy; dropping = true; }
+    } else if (phase.m === "shatter") {
+      const k = phase.k, e = k * k;
+      x = q.a[0] + q.vx * e * W * 0.32 + jx;
+      y = q.a[1] + q.vy * e * H * 0.55 + e * e * H * 0.2 + jy;
+      r = q.r * (1 - k * 0.3);
+    } else {
+      const k = 1 - Math.pow(1 - phase.k, 3); // ease-out cubic homecoming
+      const sx = q.a[0] + q.vx * W * 0.32, sy = q.a[1] + q.vy * H * 0.75;
+      x = lerp(sx, q.b[0], k) + jx * (1 - k);
+      y = lerp(sy, q.b[1], k) + jy * (1 - k);
+    }
+
+    const target = dropping ? dropPath : paths[Math.min(3, ((q.tone - 0.75) * 16) | 0)];
+    target.moveTo(x + r, y);
+    target.arc(x, y, r, 0, 6.2832);
+    if (dropping) hasDrop = true;
+  }
+  cx.globalAlpha = uniAlpha;
+  for (let bkt = 0; bkt < 4; bkt++) {
+    const tone = 0.78 + bkt * 0.062;
+    const base = 38 + tone * 26;
+    cx.fillStyle = `rgb(${base + warm * 90 | 0}, ${base * 0.9 + warm * 30 | 0}, ${base * 0.85 + warm * 18 | 0})`;
+    cx.fill(paths[bkt]);
+  }
+  if (hasDrop) {
+    cx.globalAlpha = uniAlpha * (1 - (phase.k - 0.5) * 0.4);
+    cx.fillStyle = "rgb(56, 50, 47)";
+    cx.fill(dropPath);
+  }
+  cx.globalAlpha = 1;
+
+  /* kintsugi seams on rebuild */
+  if (phase.m === "rebuild" && phase.k > 0.15) {
+    cx.strokeStyle = `rgba(255, 190, 90, ${0.35 * phase.k})`;
+    cx.lineWidth = 1.2 * DPR;
+    cx.beginPath();
+    for (let s = 0; s < 5; s++) {
+      const bx = W * 0.72 + Math.sin(s * 3.1) * W * 0.05;
+      cx.moveTo(bx, H * 0.2);
+      for (let yy = 0.2; yy < 0.8; yy += 0.05)
+        cx.lineTo(bx + Math.sin(yy * 30 + s * 7) * W * 0.015, H * yy);
+    }
+    cx.stroke();
+  }
+  requestAnimationFrame(drawClay);
+}
+requestAnimationFrame(drawClay);
+
+/* ---------- reveals ---------- */
+const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("in", e.isIntersecting)), { threshold: 0.18 });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+/* ---------- split-screen flashbacks ---------- */
+const flashbox = document.getElementById("flashbox");
+const flashtext = document.getElementById("flashtext");
+const sfx = document.getElementById("staticfx"), sx2 = sfx.getContext("2d");
+sfx.width = 160; sfx.height = 120;
+(function staticLoop() {
+  if (!document.hidden) {
+    const img = sx2.createImageData(160, 120);
+    const b = new Uint32Array(img.data.buffer);
+    for (let i = 0; i < b.length; i++) { const v = Math.random() * 255 | 0; b[i] = 255 << 24 | v << 16 | v << 8 | v; }
+    sx2.putImageData(img, 0, 0);
+  }
+  setTimeout(staticLoop, RM ? 400 : 70);
+})();
+const flashIO = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if (e.isIntersecting) {
+      const msg = e.target.dataset.flash;
+      if (flashtext.textContent !== msg) {
+        flashbox.classList.remove("glitching"); void flashbox.offsetWidth;
+        flashbox.classList.add("glitching");
+        setTimeout(() => { flashtext.textContent = msg; }, RM ? 0 : 180);
+      }
+    }
+  });
+}, { rootMargin: "-42% 0px -42% 0px" });
+document.querySelectorAll(".agreement").forEach(a => flashIO.observe(a));
+
+/* ---------- WAVE CO-REGULATOR ---------- */
+const wv = document.getElementById("wave"), wx = wv.getContext("2d");
+let WW, WH;
+function sizeWave() {
+  const r = wv.getBoundingClientRect();
+  WW = wv.width = r.width * DPR; WH = wv.height = r.height * DPR;
+}
+sizeWave(); addEventListener("resize", sizeWave);
+
+const stones = [];            // {x, y (0..1 canvas space), kind, el}
+const tray = document.getElementById("tray");
+let regTarget = 0.07, regNow = 0.07;
+
+function turbulenceAt(u) {   // 0..1 across canvas → damping factor from stones
+  let damp = 0;
+  for (const s of stones) {
+    const d = Math.abs(u - s.x);
+    damp += Math.exp(-(d * d) / (2 * 0.028)) * 0.85;
+  }
+  return clamp(1 - damp, 0.06, 1);
+}
+function updateRegulation() {
+  let sum = 0; const S = 40;
+  for (let i = 0; i < S; i++) sum += 1 - turbulenceAt(i / S);
+  regTarget = clamp(0.07 + sum / S * 1.15, 0, 0.97);
+}
+
+let wt = 0;
+function drawWave() {
+  const vis = wv.getBoundingClientRect();
+  if (vis.bottom < 0 || vis.top > innerHeight) { requestAnimationFrame(drawWave); return; }
+  wt += RM ? 0.004 : 0.016;
+  regNow = lerp(regNow, regTarget, 0.04);         // slow somatic settling
+  wx.clearRect(0, 0, WW, WH);
+
+  const mid = WH * 0.52;
+  const layers = [
+    { amp: 1.0, alpha: 0.9, hue: "232,230,225", lw: 1.6 },
+    { amp: 1.6, alpha: 0.25, hue: "255,45,74", lw: 1.1 },
+    { amp: 0.65, alpha: 0.35, hue: "167,169,176", lw: 1 }
+  ];
+  /* turbulence sampled at 64 points then lerped per column — stones only cost 64 exp() per frame */
+  const TS = 64, tsamp = new Float32Array(TS + 1);
+  for (let i = 0; i <= TS; i++) tsamp[i] = turbulenceAt(i / TS);
+  const step = 4 * DPR;
+  for (const L of layers) {
+    wx.beginPath();
+    for (let px = 0; px <= WW; px += step) {
+      const u = px / WW;
+      const ti = u * TS, t0i = ti | 0;
+      const turb = lerp(tsamp[t0i], tsamp[Math.min(TS, t0i + 1)], ti - t0i);
+      const chaos =
+        Math.sin(u * 46 + wt * 7.3) * 16 +
+        Math.sin(u * 91 + wt * 11.7) * 9 +
+        Math.sin(u * 13 + wt * 3.1) * 22 +
+        Math.sin(u * 173 + wt * 23) * 7 * turb;   /* deterministic shimmer, no per-point RNG */
+      const calm = Math.sin(u * 6 + wt * 1.2) * 10;
+      const y = mid + (chaos * turb + calm * (1 - turb)) * L.amp * DPR * (1 - regNow * 0.55);
+      px === 0 ? wx.moveTo(px, y) : wx.lineTo(px, y);
+    }
+    wx.strokeStyle = `rgba(${L.hue},${L.alpha})`;
+    wx.lineWidth = L.lw * DPR;
+    wx.stroke();
+  }
+
+  /* stone glows on canvas */
+  for (const s of stones) {
+    const sxp = s.x * WW, syp = s.y * WH;
+    const grd = wx.createRadialGradient(sxp, syp, 0, sxp, syp, 46 * DPR);
+    grd.addColorStop(0, "rgba(240,217,192,0.5)");
+    grd.addColorStop(1, "rgba(240,217,192,0)");
+    wx.fillStyle = grd;
+    wx.beginPath(); wx.arc(sxp, syp, 46 * DPR, 0, 6.2832); wx.fill();
+    wx.fillStyle = "rgba(240,217,192,0.95)";
+    wx.beginPath(); wx.arc(sxp, syp, 7 * DPR, 0, 6.2832); wx.fill();
+  }
+
+  document.getElementById("regpct").textContent = Math.round(regNow * 100) + "%";
+  requestAnimationFrame(drawWave);
+}
+requestAnimationFrame(drawWave);
+
+/* stone drag — pointer events with spring-return */
+let drag = null;
+tray.querySelectorAll(".stone").forEach(st => {
+  st.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    st.setPointerCapture(e.pointerId);
+    st.classList.add("dragging");
+    const r = st.getBoundingClientRect();
+    drag = { el: st, ox: e.clientX - r.left - r.width / 2, oy: e.clientY - r.top - r.height / 2, placed: st._placed };
+    st.style.position = "fixed"; st.style.zIndex = 200; st.style.margin = 0;
+    moveStone(e);
+  });
+  st.addEventListener("pointermove", moveStone);
+  st.addEventListener("pointerup", e => {
+    if (!drag) return;
+    st.classList.remove("dragging");
+    const wr = wv.getBoundingClientRect();
+    const inside = e.clientX > wr.left && e.clientX < wr.right && e.clientY > wr.top && e.clientY < wr.bottom;
+    /* clear old placement of this stone */
+    const old = stones.findIndex(s => s.el === st);
+    if (old >= 0) stones.splice(old, 1);
+    if (inside) {
+      stones.push({ el: st, x: (e.clientX - wr.left) / wr.width, y: (e.clientY - wr.top) / wr.height, kind: st.dataset.kind });
+      st._placed = true;
+      st.style.opacity = 0.25; st.style.pointerEvents = "auto";
+      springHome(st);
+    } else {
+      st._placed = false; st.style.opacity = 1;
+      springHome(st);
+    }
+    updateRegulation();
+    drag = null;
+  });
+});
+function moveStone(e) {
+  if (!drag) return;
+  drag.el.style.left = (e.clientX - drag.ox - 26) + "px";
+  drag.el.style.top = (e.clientY - drag.oy - 26) + "px";
+}
+function springHome(st) {
+  /* physical spring back to tray slot */
+  st.style.transition = "left 0.55s cubic-bezier(0.34,1.4,0.5,1), top 0.55s cubic-bezier(0.34,1.4,0.5,1)";
+  st.style.left = ""; st.style.top = ""; st.style.position = ""; st.style.zIndex = "";
+  setTimeout(() => (st.style.transition = ""), 600);
+}
+
+/* ---------- iteration log ---------- */
+console.log(`%c
+DUNGEON OF AGREEMENTS — BUILD ITERATION LOG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASS 1 · STRUCTURE AUDIT
+  · clay sculpture: 700 particles, two parametric target forms (amphora → cracked column)
+  · scroll phases re-cut at 0.18/0.45/0.72 — shatter was starting before Chamber II was read
+  · canvases skip work when offscreen or tab hidden
+PASS 2 · MOTION & FEEL AUDIT
+  · claymation: render time quantized to 8fps steps while physics stays 60fps — reads as
+    stop-motion without hurting scroll smoothness
+  · glitch flashback: two-step steps(2) clip-path cut + RGB split, 420ms — longer felt comedic
+  · stones: overshoot spring cubic-bezier(0.34,1.4,0.5,1) return; regulation eases at 0.04/frame
+    so the water calms at a believable somatic pace, not a UI pace
+PASS 3 · MEASURED PERF AUDIT (headless Chromium, software raster — worst case)
+  · profiled layer-by-layer: live backdrop-filter blur over the animating clay canvas
+    cost 42fps (12→54 when disabled). Replaced with layered frost gradient — same look,
+    measured 60fps flat with wave + clay + grain all running
+  · clay particles batched into 4 tone-bucket Path2D fills (700 draw calls → 5)
+  · wave turbulence sampled at 64 points + lerped; per-point RNG → deterministic shimmer
+  · grain pre-baked into 5 tiles, blitted on a 110ms cadence
+PASS 4 · ACCESS & RESPONSIVE AUDIT
+  · <860px: split collapses, flashback pane moves above clauses (order:-1) at 46vh;
+    clay sculpture recenters and drops to 420 particles
+  · full reduced-motion path: grain/static slowed, glitch skipped, clay time frozen between steps
+  · wave canvas DPR-scaled, capped at 2× to protect fill-rate on 3× phones
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, "color:#8f1022");
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>/guide — Deploy the Triptych</title>
+<meta name="description" content="Step-by-step: deploy these three sites to Netlify or a Hostinger VPS with custom domains.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0e; --panel: #101218; --edge: #1e2129; --text: #dfe2e8; --dim: #8b909c;
+    --accent: #7ee2a8; --accent2: #7cc6e8; --mono: "IBM Plex Mono", monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: "Space Grotesk", sans-serif; line-height: 1.75; }
+  ::selection { background: var(--accent); color: var(--bg); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: clamp(40px, 8vh, 90px) 24px 100px; }
+  .crumb { font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em; color: var(--dim); }
+  .crumb a { color: var(--accent); text-decoration: none; }
+  h1 { font-size: clamp(30px, 5vw, 52px); font-weight: 300; line-height: 1.1; margin: 20px 0 10px; }
+  h1 b { font-weight: 600; color: var(--accent); }
+  .lede { color: var(--dim); font-size: 16px; max-width: 620px; font-weight: 300; }
+  h2 { font-size: 13px; font-family: var(--mono); letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent2); margin: 60px 0 18px; display: flex; align-items: center; gap: 14px; }
+  h2::after { content: ""; flex: 1; height: 1px; background: var(--edge); }
+  h3 { font-size: 17px; font-weight: 500; margin: 30px 0 10px; }
+  p { color: #b9bdc7; font-size: 14.5px; margin: 12px 0; font-weight: 300; }
+  p b, li b { color: var(--text); font-weight: 500; }
+  pre {
+    background: var(--panel); border: 1px solid var(--edge); border-left: 3px solid var(--accent);
+    padding: 18px 20px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px;
+    line-height: 1.8; margin: 16px 0; border-radius: 0 4px 4px 0; color: #cfe8da;
+  }
+  pre.blue { border-left-color: var(--accent2); color: #cfe2ee; }
+  code { font-family: var(--mono); font-size: 0.92em; background: var(--panel); border: 1px solid var(--edge); padding: 1px 7px; border-radius: 3px; color: var(--accent); }
+  ol, ul { margin: 12px 0 12px 22px; color: #b9bdc7; font-size: 14.5px; font-weight: 300; }
+  li { margin: 7px 0; }
+  .tree { color: var(--dim); }
+  .tree b { color: var(--accent); font-weight: 500; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .card { background: var(--panel); border: 1px solid var(--edge); padding: 22px; border-radius: 4px; }
+  .card h4 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.24em; color: var(--accent); margin-bottom: 10px; }
+  .card.blue h4 { color: var(--accent2); }
+  .card p { font-size: 13px; margin: 0; }
+  .check { list-style: none; margin-left: 0; }
+  .check li::before { content: "▢  "; color: var(--accent); font-family: var(--mono); }
+  .foot { margin-top: 70px; padding-top: 24px; border-top: 1px solid var(--edge); font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--dim); }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb"><a href="../">← THE TRIPTYCH</a> &nbsp;/&nbsp; GUIDE</p>
+  <h1>Deploy this <b>yourself.</b></h1>
+  <p class="lede">Three static sites, zero build step, no dependencies. Any static host serves the
+  <code>showcase/</code> folder unmodified. Two proven paths below — the fast one and the sovereign one.</p>
+
+  <h2>What you're deploying</h2>
+<pre class="tree">showcase/
+├── <b>index.html</b>            landing page — the triptych
+├── <b>terminal/</b>index.html   Site 1 · The Sovereign Logic Terminal
+├── <b>dungeon/</b>index.html    Site 2 · Dungeon of Agreements
+├── <b>matrix/</b>index.html     Site 3 · The Discrepancy Matrix
+├── <b>guide/</b>index.html      this page, at /guide
+└── netlify.toml          Netlify config (headers only — no build)</pre>
+  <p>Preview locally first:</p>
+  <pre>cd showcase
+python3 -m http.server 8080   # → http://localhost:8080</pre>
+
+  <h2>Option A — Netlify</h2>
+  <div class="grid2">
+    <div class="card"><h4>A1 · DRAG &amp; DROP</h4><p>Open <b>app.netlify.com/drop</b>, drag the <code>showcase/</code> folder in, get a live URL in ~10 seconds. Rename it under Site settings.</p></div>
+    <div class="card"><h4>A2 · CLI</h4><p>For repeatable deploys from the terminal — see below.</p></div>
+  </div>
+  <pre>npm install -g netlify-cli
+netlify login                    # browser OAuth
+cd showcase
+netlify deploy --dir=. --prod    # prints the live URL</pre>
+  <h3>Continuous deploys from Git</h3>
+  <ol>
+    <li>Netlify dashboard → <b>Add new site → Import an existing project</b></li>
+    <li>Select this repository · <b>Base directory:</b> <code>showcase</code> · build command <b>empty</b> · <b>Publish directory:</b> <code>showcase</code></li>
+    <li>Every push redeploys automatically.</li>
+  </ol>
+  <h3>Custom domain</h3>
+  <p><b>Domain management → Add a domain</b> → follow the DNS steps (Netlify DNS or a CNAME/A record at your registrar). Let's Encrypt HTTPS is automatic.</p>
+
+  <h2>Option B — Hostinger VPS · one domain per site</h2>
+  <p>Full control: map <code>bullshitdecoder.com</code> → the Terminal and
+  <code>theeggplantfiles.com</code> → the Matrix (or serve the whole triptych from one domain —
+  the sites cross-link with relative paths, so the landing page works best at the root).</p>
+  <h3>1 · Upload</h3>
+  <pre class="blue">rsync -avz showcase/ user@YOUR-VPS-IP:/var/www/triptych/</pre>
+  <h3>2 · nginx server block per domain</h3>
+  <pre class="blue"># /etc/nginx/sites-available/bullshitdecoder.com
+server {
+    listen 80;
+    server_name bullshitdecoder.com www.bullshitdecoder.com;
+    root /var/www/triptych/terminal;      # or /var/www/triptych for the full triptych
+    index index.html;
+    location / { try_files $uri $uri/ =404; }
+}</pre>
+  <pre class="blue">sudo ln -s /etc/nginx/sites-available/bullshitdecoder.com /etc/nginx/sites-enabled/
+sudo nginx -t &amp;&amp; sudo systemctl reload nginx</pre>
+  <h3>3 · DNS</h3>
+  <p>In Hostinger's DNS panel: <b>A record</b> for <code>@</code> and <code>www</code> → your VPS IP.</p>
+  <h3>4 · Free HTTPS</h3>
+  <pre class="blue">sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d bullshitdecoder.com -d www.bullshitdecoder.com</pre>
+
+  <h2>Sanity checklist</h2>
+  <ul class="check">
+    <li>Local preview looks right</li>
+    <li><code>/</code> · <code>/terminal/</code> · <code>/dungeon/</code> · <code>/matrix/</code> · <code>/guide/</code> all load on the live URL</li>
+    <li>HTTPS padlock present</li>
+    <li>Each site's devtools console prints its build iteration log — quick script-integrity check</li>
+  </ul>
+
+  <p class="foot">EVERYTHING RUNS CLIENT-SIDE · NOTHING IS TRANSMITTED OR STORED ·
+  THE MATRIX IS A LABELED FORENSIC FICTION — KEEP ITS DISCLAIMER IF YOU FORK IT<br>
+  BUILT END-TO-END BY CLAUDE CODE</p>
+</div>
+</body>
+</html>
