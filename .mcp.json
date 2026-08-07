@@ -3,6 +3,13 @@
     "exa": {
       "type": "http",
       "url": "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa,web_search_advanced_exa&exaApiKey=56604f44-d686-45d9-8f80-c5bee7110039"
+    },
+    "suno": {
+      "type": "http",
+      "url": "https://suno.mcp.acedata.cloud/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SUNO_API_TOKEN}"
+      }
     }
   }
 }
