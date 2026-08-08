@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deception Decoder — name what's happening in a message</title>
+<meta name="description" content="Paste a message. See which documented manipulation, coercive-control, and fallacy patterns appear in it — analyzed entirely in your browser. Nothing is uploaded.">
+<meta name="color-scheme" content="dark">
+<meta property="og:title" content="Deception Decoder">
+<meta property="og:description" content="A private, browser-based tool for naming manipulation patterns in text.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236ee7c0'/%3E%3Ctext x='16' y='23' font-family='system-ui,sans-serif' font-size='20' font-weight='700' text-anchor='middle' fill='%2308201a'%3ED%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/decoder.css">
+</head>
+<body>
+<a class="skip" href="#input">Skip to the text box</a>
+
+<header class="masthead">
+  <div class="wrap row">
+    <span class="mark" aria-hidden="true">D</span>
+    <h1>Deception Decoder</h1>
+    <span class="tag">Runs entirely in your browser</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h2>Name what's <em>actually</em> happening in the message.</h2>
+    <p>
+      Paste a text, email, or DM. This tool checks it against a library of manipulation, coercive-control,
+      and reasoning-distortion patterns drawn from clinical and forensic research — then shows you exactly
+      which phrases matched, what each pattern does, and how to respond without getting pulled in.
+    </p>
+    <p style="margin-top:12px">
+      It describes <strong>text</strong>, never people. It won't tell you who someone is or what they intended.
+      It gives you vocabulary for something you may already sense but haven't been able to name.
+    </p>
+    <span class="privacy">🔒 Nothing is uploaded, stored, or logged — analysis happens on your device</span>
+  </section>
+
+  <section class="composer">
+    <label class="field-label" for="input">The message</label>
+    <textarea id="input" spellcheck="true"
+      placeholder="Paste the message here. Include as much of the exchange as you like — more context gives a better read. Nothing leaves this page."></textarea>
+    <div class="controls">
+      <button class="primary" id="decode">Decode message</button>
+      <button id="sample">Try an example</button>
+      <button class="quiet" id="clear">Clear</button>
+      <span class="counter" id="counter">0 characters</span>
+    </div>
+  </section>
+
+  <section class="results" id="results" hidden aria-live="polite">
+    <div class="verdict" id="verdict"></div>
+    <div class="indices" id="indices"></div>
+    <div class="safety" id="safety" hidden></div>
+
+    <div class="section-head">
+      <h3>The message, annotated</h3>
+      <span class="hint">Select any highlight for the full breakdown</span>
+    </div>
+    <div class="annotated" id="annotated"></div>
+
+    <div class="section-head">
+      <h3>Findings</h3>
+      <span class="hint" id="findings-count"></span>
+    </div>
+    <div class="findings" id="findings"></div>
+
+    <div class="controls" style="margin-top:26px">
+      <button id="copy-report">Copy report</button>
+      <button id="print-report">Print / save as PDF</button>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="disclaimer">
+      <strong>What this is:</strong> a pattern-recognition aid built on published research — Freyd on DARVO,
+      Stark on coercive control, Sweet on gaslighting, Bancroft on entitlement, Gottman on contempt,
+      and standard treatments of informal fallacies. Each finding shows its source.
+    </p>
+    <p class="disclaimer">
+      <strong>What this isn't:</strong> a diagnosis, a psychological assessment, a lie detector, or evidence
+      about anyone's character or intent. Language is ambiguous and context is everything. A clear result is
+      not proof that a relationship is healthy, and a flagged phrase is not proof that someone is abusive.
+      If something feels wrong, that impression is data even when this tool finds nothing.
+    </p>
+    <p class="disclaimer">
+      In danger? US: 1-800-799-7233 (DV) or 988 (crisis) · UK: 0808 2000 247 · AU: 1800 737 732 ·
+      <a href="https://www.befrienders.org" target="_blank" rel="noopener noreferrer">international helplines</a>.
+    </p>
+    <p class="print-hide" style="margin-top:16px">Open source · no analytics · no cookies · no accounts · built with Claude Code</p>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Pattern details" aria-hidden="true">
+  <button class="close" aria-label="Close details">×</button>
+  <div id="drawer-body"></div>
+</aside>
+
+<script type="module" src="assets/js/ui/app.js"></script>
+<noscript>
+  <div class="wrap" style="padding:30px 0;color:var(--paper-dim)">
+    This tool analyses text entirely in your browser, which requires JavaScript to be enabled.
+    Nothing is sent to a server either way.
+  </div>
+</noscript>
+</body>
+</html>
