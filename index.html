@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deception Decoder — name what's happening in a message</title>
+<meta name="description" content="Paste a message. See which documented manipulation, coercive-control, and fallacy patterns appear in it — analyzed entirely in your browser. Nothing is uploaded.">
+<meta name="color-scheme" content="dark">
+<meta property="og:title" content="Deception Decoder">
+<meta property="og:description" content="A private, browser-based tool for naming manipulation patterns in text.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236ee7c0'/%3E%3Ctext x='16' y='23' font-family='system-ui,sans-serif' font-size='20' font-weight='700' text-anchor='middle' fill='%2308201a'%3ED%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+/* =============================================================
+   Deception Decoder — visual system
+
+   Design brief: this app is used by people whose judgement is
+   actively being undermined. The interface therefore aims for
+   *calm authority*, not alarm. No red-alert klaxons, no scare
+   typography, no gamified score. Deep ink, warm paper, one
+   restrained accent per severity, and generous reading measure.
+   ============================================================= */
+
+:root {
+  --ink:        #10131a;
+  --ink-2:      #171b24;
+  --ink-3:      #1f2531;
+  --line:       #2b3242;
+  --line-soft:  #232a37;
+  --paper:      #edeae4;
+  --paper-dim:  #a8adba;
+  --paper-faint:#6f7688;
+
+  --accent:     #6ee7c0;   /* calm teal — primary action */
+  --accent-ink: #08201a;
+  --sev-1:      #7fb2e5;   /* concerning — cool blue, deliberately low-arousal */
+  --sev-2:      #e5b567;   /* serious — amber */
+  --sev-3:      #e8735f;   /* critical — clay red, not fire-engine red */
+  --safe:       #f2d8a7;
+
+  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  --radius: 10px;
+  --measure: 68ch;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--sans);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, #1b2436 0%, transparent 60%),
+    var(--ink);
+  background-color: var(--ink);
+  color: var(--paper);
+  line-height: 1.65;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--accent); color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 36px); }
+.skip {
+  position: absolute; left: -9999px; top: 0; background: var(--accent); color: var(--accent-ink);
+  padding: 10px 18px; z-index: 100; font-weight: 600;
+}
+.skip:focus { left: 12px; top: 12px; }
+
+/* ---------- masthead ---------- */
+header.masthead { border-bottom: 1px solid var(--line-soft); padding: 22px 0 20px; }
+.masthead .row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.mark {
+  width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+  background: linear-gradient(145deg, var(--accent), #3d9d86);
+  display: grid; place-items: center; color: var(--accent-ink); font-weight: 700; font-size: 17px;
+}
+.masthead h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.masthead .tag {
+  margin-left: auto; font-size: 11.5px; color: var(--paper-dim); font-family: var(--mono);
+  border: 1px solid var(--line); border-radius: 100px; padding: 5px 13px; display: inline-flex; gap: 8px; align-items: center;
+}
+.masthead .tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+/* ---------- hero ---------- */
+.hero { padding: clamp(38px, 7vh, 74px) 0 30px; }
+.hero h2 {
+  font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em;
+  font-size: clamp(32px, 5.2vw, 56px); line-height: 1.08; max-width: 17ch;
+}
+.hero h2 em { font-style: italic; color: var(--accent); }
+.hero p { color: var(--paper-dim); max-width: var(--measure); margin-top: 18px; font-size: 16px; }
+.hero .privacy {
+  display: inline-flex; align-items: center; gap: 9px; margin-top: 22px;
+  font-size: 13px; color: var(--accent); background: rgba(110,231,192,0.08);
+  border: 1px solid rgba(110,231,192,0.25); border-radius: 100px; padding: 7px 16px;
+}
+
+/* ---------- composer ---------- */
+.composer { margin-top: 12px; }
+.composer label.field-label {
+  display: block; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--paper-faint); margin-bottom: 9px; font-weight: 500;
+}
+textarea#input {
+  width: 100%; min-height: 190px; resize: vertical;
+  background: var(--ink-2); color: var(--paper);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 18px 20px; font-family: var(--sans); font-size: 15.5px; line-height: 1.75;
+  transition: border-color .2s, box-shadow .2s;
+}
+textarea#input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(110,231,192,0.1); }
+textarea#input::placeholder { color: var(--paper-faint); }
+
+.controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+button {
+  font-family: var(--sans); font-size: 14px; font-weight: 500; cursor: pointer;
+  border-radius: 8px; padding: 11px 20px; border: 1px solid var(--line);
+  background: var(--ink-3); color: var(--paper); transition: all .18s ease;
+}
+button:hover { border-color: var(--paper-faint); transform: translateY(-1px); }
+button:active { transform: translateY(0); }
+button.primary {
+  background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600;
+  padding: 11px 26px;
+}
+button.primary:hover { background: #85f0ce; box-shadow: 0 6px 22px rgba(110,231,192,0.22); }
+button.quiet { background: transparent; color: var(--paper-dim); }
+.counter { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--paper-faint); }
+
+/* ---------- results ---------- */
+.results { margin-top: 44px; padding-bottom: 80px; }
+.results[hidden] { display: none; }
+
+.verdict {
+  border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(20px, 3vw, 30px);
+  background: linear-gradient(160deg, var(--ink-2), var(--ink)); position: relative; overflow: hidden;
+}
+.verdict::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--band, var(--paper-faint)); }
+.verdict[data-band="clear"]    { --band: var(--accent); }
+.verdict[data-band="low"]      { --band: var(--sev-1); }
+.verdict[data-band="moderate"] { --band: var(--sev-2); }
+.verdict[data-band="high"]     { --band: var(--sev-3); }
+.verdict[data-band="critical"] { --band: var(--sev-3); }
+.verdict h3 { font-family: var(--serif); font-size: clamp(21px, 2.6vw, 27px); font-weight: 400; letter-spacing: -0.01em; }
+.verdict p { color: var(--paper-dim); max-width: var(--measure); margin-top: 10px; font-size: 15px; }
+.verdict .mitigating {
+  margin-top: 14px; font-size: 13.5px; color: var(--accent);
+  border-top: 1px solid var(--line-soft); padding-top: 13px;
+}
+
+/* indices */
+.indices { display: grid; gap: 12px; margin-top: 22px; }
+.index-row { display: grid; grid-template-columns: 168px 1fr 46px; gap: 14px; align-items: center; }
+.index-row .name { font-size: 13px; color: var(--paper-dim); }
+/* display:block is load-bearing — these are <span>s, and an inline box ignores
+   height/width, which silently renders every bar empty. */
+.index-row .track { display: block; height: 7px; background: var(--ink-3); border-radius: 100px; overflow: hidden; }
+.index-row .fill {
+  display: block; height: 100%; border-radius: 100px; width: 0; min-width: 0;
+  background: linear-gradient(90deg, var(--sev-1), var(--sev-2) 60%, var(--sev-3));
+  background-size: 340px 100%; background-repeat: no-repeat;
+  transition: width 1s cubic-bezier(.22,1,.36,1);
+}
+.index-row .fill[data-target="0"] { background: var(--line); }
+.index-row .val { font-family: var(--mono); font-size: 12.5px; color: var(--paper-dim); text-align: right; }
+
+/* safety panel */
+.safety {
+  margin-top: 22px; border: 1px solid rgba(242,216,167,0.4); border-radius: var(--radius);
+  background: rgba(242,216,167,0.07); padding: 22px 24px;
+}
+.safety h3 { font-size: 16px; color: var(--safe); margin-bottom: 8px; }
+.safety p { font-size: 14.5px; color: #e8dcc4; max-width: var(--measure); }
+.safety ul { margin: 12px 0 0 18px; font-size: 14px; color: #e8dcc4; }
+.safety li { margin: 5px 0; }
+.safety a { color: var(--safe); }
+
+/* annotated text */
+.section-head {
+  display: flex; align-items: baseline; gap: 12px; margin: 40px 0 14px; flex-wrap: wrap;
+}
+.section-head h3 { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-faint); font-weight: 600; }
+.section-head .hint { font-size: 13px; color: var(--paper-faint); margin-left: auto; }
+
+.annotated {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--ink-2);
+  padding: clamp(18px, 3vw, 28px); font-size: 16px; line-height: 2.05; white-space: pre-wrap;
+  word-break: break-word; max-width: var(--measure);
+}
+.annotated mark {
+  background: transparent; color: inherit; cursor: pointer; padding: 2px 4px; border-radius: 4px;
+  border-bottom: 2px solid; position: relative; transition: background .16s;
+  font: inherit;
+}
+.annotated mark[data-sev="1"] { border-color: var(--sev-1); background: rgba(127,178,229,0.13); }
+.annotated mark[data-sev="2"] { border-color: var(--sev-2); background: rgba(229,181,103,0.14); }
+.annotated mark[data-sev="3"] { border-color: var(--sev-3); background: rgba(232,115,95,0.15); }
+.annotated mark:hover { filter: brightness(1.25); }
+.annotated mark sup { font-size: 10px; font-family: var(--mono); opacity: .8; margin-left: 3px; vertical-align: super; }
+
+/* findings list */
+.findings { display: grid; gap: 10px; margin-top: 14px; }
+.finding {
+  border: 1px solid var(--line); border-left: 3px solid var(--sev, var(--paper-faint));
+  border-radius: 8px; background: var(--ink-2); padding: 15px 18px; cursor: pointer;
+  transition: border-color .18s, transform .18s;
+  text-align: left; width: 100%; font: inherit; color: inherit;
+}
+.finding:hover { transform: translateX(2px); border-color: var(--paper-faint); }
+.finding[data-sev="1"] { --sev: var(--sev-1); }
+.finding[data-sev="2"] { --sev: var(--sev-2); }
+.finding[data-sev="3"] { --sev: var(--sev-3); }
+.finding .top { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.finding .name { font-weight: 600; font-size: 14.5px; }
+.finding .sev-chip {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  border: 1px solid var(--sev); color: var(--sev); border-radius: 100px; padding: 2px 9px;
+}
+.finding .quote { color: var(--paper-dim); font-size: 14px; margin-top: 7px; font-style: italic; }
+.finding .why { color: var(--paper-dim); font-size: 13.5px; margin-top: 6px; }
+
+/* ---------- detail drawer ---------- */
+.scrim {
+  position: fixed; inset: 0; background: rgba(6,8,12,.66); backdrop-filter: blur(3px);
+  opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 60;
+}
+.scrim.open { opacity: 1; pointer-events: auto; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100vw);
+  background: var(--ink-2); border-left: 1px solid var(--line); z-index: 70;
+  transform: translateX(102%); transition: transform .42s cubic-bezier(.32,.72,0,1);
+  overflow-y: auto; padding: 30px clamp(20px, 4vw, 34px) 60px;
+}
+.drawer.open { transform: none; }
+.drawer .close {
+  position: absolute; top: 16px; right: 16px; border: 1px solid var(--line);
+  background: var(--ink-3); width: 34px; height: 34px; border-radius: 8px; padding: 0;
+  display: grid; place-items: center; font-size: 17px; color: var(--paper-dim);
+}
+.drawer .chip {
+  display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: .18em;
+  text-transform: uppercase; border: 1px solid var(--sev, var(--paper-faint)); color: var(--sev);
+  border-radius: 100px; padding: 4px 11px; margin-bottom: 14px;
+}
+.drawer[data-sev="1"] { --sev: var(--sev-1); } .drawer[data-sev="2"] { --sev: var(--sev-2); } .drawer[data-sev="3"] { --sev: var(--sev-3); }
+.drawer h3 { font-family: var(--serif); font-size: 27px; font-weight: 400; letter-spacing: -0.01em; }
+.drawer .quoted {
+  border-left: 2px solid var(--sev, var(--line)); padding: 4px 0 4px 14px; margin: 16px 0;
+  color: var(--paper-dim); font-style: italic; font-size: 14.5px;
+}
+.drawer h4 {
+  font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--paper-faint); margin: 26px 0 9px; font-weight: 600;
+}
+.drawer p { font-size: 14.5px; color: #cfd4de; }
+.drawer .lineage { font-size: 13px; color: var(--paper-faint); font-family: var(--mono); line-height: 1.6; }
+.drawer .note {
+  font-size: 13.5px; color: var(--paper-dim); background: var(--ink-3);
+  border-radius: 8px; padding: 12px 14px; margin-top: 12px;
+}
+.script {
+  border: 1px solid var(--line); border-radius: 8px; background: var(--ink-3);
+  padding: 13px 15px; margin-bottom: 9px; font-size: 14px; color: #dbe0e9;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.script .n { font-family: var(--mono); font-size: 11px; color: var(--paper-faint); padding-top: 2px; }
+.script .copy { margin-left: auto; padding: 5px 11px; font-size: 11.5px; flex-shrink: 0; }
+
+/* ---------- footer ---------- */
+footer.foot {
+  border-top: 1px solid var(--line-soft); padding: 30px 0 50px; margin-top: 20px;
+  color: var(--paper-faint); font-size: 13px;
+}
+footer.foot p { max-width: var(--measure); margin-bottom: 10px; }
+footer.foot a { color: var(--paper-dim); }
+footer.foot .disclaimer { color: var(--paper-faint); font-size: 12.5px; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 720px) {
+  .index-row { grid-template-columns: 108px 1fr 40px; gap: 10px; }
+  .index-row .name { font-size: 12px; }
+  .masthead .tag { margin-left: 0; }
+  .drawer { width: 100vw; }
+  .annotated { font-size: 15px; line-height: 1.95; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
+  .drawer { transition: none; }
+}
+@media print {
+  body { background: #fff; color: #111; }
+  .composer, .controls, .drawer, .scrim, .masthead .tag, footer.foot .print-hide { display: none !important; }
+  .verdict, .annotated, .finding { border-color: #bbb; background: #fff; color: #111; }
+  .annotated mark { background: none !important; border-bottom: 2px solid #666; }
+}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#input">Skip to the text box</a>
+
+<header class="masthead">
+  <div class="wrap row">
+    <span class="mark" aria-hidden="true">D</span>
+    <h1>Deception Decoder</h1>
+    <span class="tag">Runs entirely in your browser</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h2>Name what's <em>actually</em> happening in the message.</h2>
+    <p>
+      Paste a text, email, or DM. This tool checks it against a library of manipulation, coercive-control,
+      and reasoning-distortion patterns drawn from clinical and forensic research — then shows you exactly
+      which phrases matched, what each pattern does, and how to respond without getting pulled in.
+    </p>
+    <p style="margin-top:12px">
+      It describes <strong>text</strong>, never people. It won't tell you who someone is or what they intended.
+      It gives you vocabulary for something you may already sense but haven't been able to name.
+    </p>
+    <span class="privacy">🔒 Nothing is uploaded, stored, or logged — analysis happens on your device</span>
+  </section>
+
+  <section class="composer">
+    <label class="field-label" for="input">The message</label>
+    <textarea id="input" spellcheck="true"
+      placeholder="Paste the message here. Include as much of the exchange as you like — more context gives a better read. Nothing leaves this page."></textarea>
+    <div class="controls">
+      <button class="primary" id="decode">Decode message</button>
+      <button id="sample">Try an example</button>
+      <button class="quiet" id="clear">Clear</button>
+      <span class="counter" id="counter">0 characters</span>
+    </div>
+  </section>
+
+  <section class="results" id="results" hidden aria-live="polite">
+    <div class="verdict" id="verdict"></div>
+    <div class="indices" id="indices"></div>
+    <div class="safety" id="safety" hidden></div>
+
+    <div class="section-head">
+      <h3>The message, annotated</h3>
+      <span class="hint">Select any highlight for the full breakdown</span>
+    </div>
+    <div class="annotated" id="annotated"></div>
+
+    <div class="section-head">
+      <h3>Findings</h3>
+      <span class="hint" id="findings-count"></span>
+    </div>
+    <div class="findings" id="findings"></div>
+
+    <div class="controls" style="margin-top:26px">
+      <button id="copy-report">Copy report</button>
+      <button id="print-report">Print / save as PDF</button>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="disclaimer">
+      <strong>What this is:</strong> a pattern-recognition aid built on published research — Freyd on DARVO,
+      Stark on coercive control, Sweet on gaslighting, Bancroft on entitlement, Gottman on contempt,
+      and standard treatments of informal fallacies. Each finding shows its source.
+    </p>
+    <p class="disclaimer">
+      <strong>What this isn't:</strong> a diagnosis, a psychological assessment, a lie detector, or evidence
+      about anyone's character or intent. Language is ambiguous and context is everything. A clear result is
+      not proof that a relationship is healthy, and a flagged phrase is not proof that someone is abusive.
+      If something feels wrong, that impression is data even when this tool finds nothing.
+    </p>
+    <p class="disclaimer">
+      In danger? US: 1-800-799-7233 (DV) or 988 (crisis) · UK: 0808 2000 247 · AU: 1800 737 732 ·
+      <a href="https://www.befrienders.org" target="_blank" rel="noopener noreferrer">international helplines</a>.
+    </p>
+    <p class="print-hide" style="margin-top:16px">Open source · no analytics · no cookies · no accounts · built with Claude Code</p>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Pattern details" aria-hidden="true">
+  <button class="close" aria-label="Close details">×</button>
+  <div id="drawer-body"></div>
+</aside>
+
+<script>
+/* Deception Decoder — single-file build. Modular source lives in deception-decoder/ */
+
+(function () {
+
+/**
+ * taxonomy.js — the analytical knowledge base.
+ *
+ * Each entry is a *tactic class*: a named pattern of interpersonal influence
+ * documented in the clinical, forensic, or rhetorical literature. Everything the
+ * engine can say about a message ultimately comes from this file, which makes it
+ * the single place to audit, extend, or localize the app's claims.
+ *
+ * Field contract
+ * ---------------
+ *   id         stable slug (used in URLs, exports, tests — do not rename casually)
+ *   label      human name shown in the UI
+ *   family     grouping used for the index bars: reality | blame | coercion |
+ *              obligation | escalation | rhetoric
+ *   severity   1 concerning · 2 serious · 3 critical (drives colour + weighting)
+ *   lineage    where the construct comes from — shown to the user verbatim so the
+ *              app never asserts authority it hasn't earned
+ *   mechanism  what the tactic *does* to the listener, in plain language
+ *   patterns   RegExp signatures. Written to match a clause, not a whole sentence,
+ *              so highlights stay tight. Always global + case-insensitive.
+ *   scripts    non-reactive ("gray rock") replies — flat, brief, unarguable
+ *   note       optional caveat surfaced in the drawer to prevent over-reading
+ *
+ * Extending: append an object. No other file needs to change — the analyzer,
+ * scoring, and UI all iterate this array.
+ */
+
+const FAMILIES = {
+  reality:    { label: "Reality distortion", blurb: "Pressure on your memory, perception, and judgement." },
+  blame:      { label: "Blame transfer",     blurb: "Responsibility relocated from speaker to listener." },
+  coercion:   { label: "Coercive pressure",  blurb: "Compliance extracted by attaching a cost to refusal." },
+  obligation: { label: "Manufactured debt",  blurb: "Obligation created from past acts, then called in." },
+  escalation: { label: "Emotional escalation", blurb: "Contempt, absolutes, and intensity used as leverage." },
+  rhetoric:   { label: "Argument distortion", blurb: "Logical structure bent so the point can't be reached." },
+};
+
+const TAXONOMY = [
+  {
+    id: "darvo",
+    label: "DARVO",
+    family: "blame",
+    severity: 3,
+    lineage: "Freyd (1997); Harsey & Freyd (2020) — Deny, Attack, Reverse Victim and Offender.",
+    mechanism:
+      "When confronted, the speaker denies the behaviour, attacks the credibility of the person raising it, " +
+      "and re-casts themselves as the injured party. The conversation stops being about what happened and " +
+      "becomes about your cruelty in mentioning it. Research finds exposure to DARVO increases the " +
+      "confronter's self-blame.",
+    patterns: [
+      /you'?re (?:the one|actually the one|really the one)\b[^.!?\n]*/gi,
+      /(?:how dare you|i can'?t believe you(?:'?d| would)?\s*(?:accuse|say|think))[^.!?\n]*/gi,
+      /(?:i'?m the (?:real )?victim|you'?re attacking me|now i'?m the bad guy|so i'?m the villain)[^.!?\n]*/gi,
+      /you'?re (?:the )?(?:abusive|toxic|controlling) one\b[^.!?\n]*/gi,
+      /(?:this is|that'?s) why (?:i|nobody) (?:can'?t|don'?t) (?:talk to|trust) you\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "I hear that you see it differently. The thing I raised still happened, and it still needs addressing.",
+      "I'm not going to debate who the victim is. I'm telling you what I observed and what I need.",
+      "We can talk about your feelings separately. Right now I'm talking about [the specific event].",
+    ],
+  },
+  {
+    id: "gaslighting",
+    label: "Reality denial / gaslighting",
+    family: "reality",
+    severity: 3,
+    lineage: "Sweet (2019), sociology of gaslighting; Stern (2007); Stark (2007) on 'crazy-making'.",
+    mechanism:
+      "Repeated assertion that documented events did not happen, or happened entirely differently, until you " +
+      "outsource the question of what is real to the speaker. The damage isn't a single lie — it's the slow " +
+      "transfer of epistemic authority away from your own memory.",
+    patterns: [
+      /that (?:never|literally never) happened\b[^.!?\n]*/gi,
+      /you'?re (?:imagining|making (?:that|this|it) up|remembering (?:it|that) wrong|misremembering|inventing)[^.!?\n]*/gi,
+      /(?:you'?re|you are|your) (?:being )?(?:crazy|insane|delusional|paranoid|unstable|unhinged|losing it)\b[^.!?\n]*/gi,
+      /i never said (?:that|anything like that)\b[^.!?\n]*/gi,
+      /(?:that'?s not what (?:i said|happened)|you (?:always )?twist (?:my words|everything))\b[^.!?\n]*/gi,
+      /(?:you need help|you should see (?:a therapist|someone)|get help)\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "My memory of it is clear, and I'm confident in it.",
+      "We remember it differently. I'm going to trust my own record.",
+      "I'm not willing to argue about whether it happened. It did.",
+    ],
+    note:
+      "A single disagreement about facts is not gaslighting — people genuinely misremember. The pattern " +
+      "matters: repetition over time, paired with attacks on your stability.",
+  },
+  {
+    id: "blame-transfer",
+    label: "Blame transfer",
+    family: "blame",
+    severity: 3,
+    lineage: "Bancroft (2002) on entitlement and externalized responsibility.",
+    mechanism:
+      "The speaker's choices are re-described as involuntary reactions to you. Their actions become your " +
+      "fault; the logical endpoint is a person who is never the author of anything they do.",
+    patterns: [
+      /(?:this is|it'?s|that'?s) (?:all |really )?your fault\b[^.!?\n]*/gi,
+      /look what you (?:made me do|make me do)\b[^.!?\n]*/gi,
+      /you (?:drove|pushed|forced) me to (?:this|it|do)\b[^.!?\n]*/gi,
+      /if you (?:hadn'?t|didn'?t|weren'?t)[^.!?\n]{0,60}?(?:i wouldn'?t|i would never|none of this)[^.!?\n]*/gi,
+      /you made me (?:do|say|feel|act)\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "Your actions are your choices. Mine are mine.",
+      "I'm responsible for what I did. I'm not responsible for what you did.",
+      "We can discuss my part separately. It doesn't erase yours.",
+    ],
+  },
+  {
+    id: "threat",
+    label: "Threat / intimidation",
+    family: "coercion",
+    severity: 3,
+    lineage: "Stark (2007), coercive control; Duluth Model — 'Using Intimidation' and 'Using Coercion and Threats'.",
+    mechanism:
+      "Compliance is purchased with a stated cost for refusal: abandonment, exposure, escalation, financial " +
+      "harm, or harm to people, pets, or property. Coercive control research treats credible threat as the " +
+      "load-bearing structure of entrapment — the threat does not need to be carried out to work.",
+    patterns: [
+      /if you (?:leave|go|tell|call|report|don'?t)[^.!?\n]{0,70}?(?:i'?ll|i will|you'?ll (?:regret|be sorry|lose))[^.!?\n]*/gi,
+      /you'?ll (?:regret|be sorry|never see|lose everything)\b[^.!?\n]*/gi,
+      /i'?ll (?:make sure|see to it|tell everyone|ruin|destroy)\b[^.!?\n]*/gi,
+      /(?:no one|nobody) (?:else )?(?:will|would) (?:ever )?(?:love|want|believe|put up with) you\b[^.!?\n]*/gi,
+      /(?:you'?ll never|i'?ll take) (?:get|see|keep) the (?:kids|children|house|money)\b[^.!?\n]*/gi,
+      /don'?t make me\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "I've heard the threat. It doesn't change my decision.",
+      "I won't negotiate under pressure. When it stops, we can talk.",
+      "That statement is noted. I'm ending this conversation now.",
+    ],
+    note: "If any threat involves physical harm, weapons, or your children, please read the safety panel below.",
+  },
+  {
+    id: "isolation",
+    label: "Isolation pressure",
+    family: "coercion",
+    severity: 3,
+    lineage: "Stark (2007); Duluth Model — 'Using Isolation'. A core, under-recognized control mechanism.",
+    mechanism:
+      "Contact with the people who could corroborate your account is restricted, discouraged, or poisoned. " +
+      "Isolation is what makes every other tactic durable: with no outside reference points, the speaker " +
+      "becomes the only available witness to reality.",
+    patterns: [
+      /(?:your|those) (?:friends?|family|mother|sister|brother)[^.!?\n]{0,40}?(?:toxic|bad for you|hate me|poison|turning you)[^.!?\n]*/gi,
+      /(?:you (?:don'?t|shouldn'?t) need|why do you (?:even )?need) (?:them|anyone else|other (?:friends|people))\b[^.!?\n]*/gi,
+      /(?:stop|quit) (?:talking to|seeing|texting)\b[^.!?\n]*/gi,
+      /(?:it'?s|its) (?:just )?(?:me and you|us against)\b[^.!?\n]*/gi,
+      /who (?:are you (?:talking|texting) to|were you with)\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "My relationships aren't up for negotiation.",
+      "I'm keeping the people in my life. That isn't a threat to us.",
+      "I'll decide who I spend time with.",
+    ],
+  },
+  {
+    id: "monitoring",
+    label: "Surveillance & rule-setting",
+    family: "coercion",
+    severity: 2,
+    lineage: "Stark (2007) on micro-regulation of daily life; Duluth 'Using Male Privilege' / rule-making.",
+    mechanism:
+      "Ordinary autonomy is converted into something requiring permission, accounting, or proof. The content " +
+      "of any single rule matters less than the accumulating principle that your day is subject to review.",
+    patterns: [
+      /(?:you (?:need|have) to (?:ask|check with|tell) me|ask me first)\b[^.!?\n]*/gi,
+      /(?:send|show) me (?:a )?(?:proof|pic|screenshot|your location)\b[^.!?\n]*/gi,
+      /(?:why (?:didn'?t|haven'?t) you (?:answer|reply|call))\b[^.!?\n]*/gi,
+      /i (?:checked|saw|looked at) your (?:phone|messages|email|location)\b[^.!?\n]*/gi,
+      /you'?re not (?:allowed|going) to\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "I'm not going to account for my whereabouts.",
+      "I'll share what I choose to share.",
+      "Checking my phone isn't something I consent to.",
+    ],
+  },
+  {
+    id: "obligation",
+    label: "Guilt leverage / manufactured debt",
+    family: "obligation",
+    severity: 2,
+    lineage: "Braiker (2004) on emotional blackmail; Forward (1997), 'FOG' — fear, obligation, guilt.",
+    mechanism:
+      "Past favours, sacrifices, or suffering are converted into a ledger you are permanently behind on, and " +
+      "payment is taken in compliance. Care is reframed as credit extended.",
+    patterns: [
+      /after (?:all|everything) (?:i'?ve|i have|i) (?:done|sacrificed|given|put up with)[^.!?\n]*/gi,
+      /(?:i gave up|i sacrificed|i lost)[^.!?\n]{0,50}? for you\b[^.!?\n]*/gi,
+      /you owe me\b[^.!?\n]*/gi,
+      /if you (?:really |actually |truly )?(?:loved|cared about) me,? you'?d\b[^.!?\n]*/gi,
+      /(?:a good|any (?:decent|real)) (?:partner|wife|husband|person|friend|mother|father) would\b[^.!?\n]*/gi,
+      /after everything i'?ve been through\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "I appreciate what you've done. It doesn't obligate me to agree to this.",
+      "Care isn't a debt. I'm still saying no.",
+      "I hear that you're disappointed. My answer stands.",
+    ],
+  },
+  {
+    id: "minimization",
+    label: "Minimization",
+    family: "reality",
+    severity: 2,
+    lineage: "Bancroft (2002); minimization/denial cluster in batterer-intervention literature.",
+    mechanism:
+      "The event stays exactly the same size; only your right to react to it is reduced. 'It was a joke' and " +
+      "'you're too sensitive' relocate the problem from the act to your response to the act.",
+    patterns: [
+      /(?:it was|i was) (?:just|only) (?:a joke|joking|kidding|teasing|playing)\b[^.!?\n]*/gi,
+      /you'?re (?:too|being|so) (?:sensitive|dramatic|emotional|defensive)\b[^.!?\n]*/gi,
+      /(?:calm down|relax|chill out|settle down)\b[^.!?\n]*/gi,
+      /you'?re (?:overreacting|blowing (?:this|it) (?:way )?out of proportion|making a big deal)\b[^.!?\n]*/gi,
+      /it'?s not (?:that|a) big (?:of a )?deal\b[^.!?\n]*/gi,
+      /(?:get over it|let it go|move on already)\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "It mattered to me. I'm not debating the size of it.",
+      "Jokes land as jokes. That didn't. I'm telling you how it landed.",
+      "My reaction is proportionate to my experience of it.",
+    ],
+  },
+  {
+    id: "contempt",
+    label: "Contempt & character attack",
+    family: "escalation",
+    severity: 2,
+    lineage: "Gottman & Levenson (1992) — contempt is the single strongest predictor of relationship dissolution.",
+    mechanism:
+      "The disagreement is escalated from behaviour ('you did X') to identity ('you ARE X'). Character attacks " +
+      "cannot be resolved by any change in behaviour, which is precisely what makes them useful for control.",
+    patterns: [
+      /you'?re (?:such )?(?:a |an )?(?:idiot|moron|stupid|pathetic|worthless|useless|disgusting|selfish|lazy)\b[^.!?\n]*/gi,
+      /(?:what'?s wrong with you|grow up|act your age)\b[^.!?\n]*/gi,
+      /you (?:always|never) [^.!?\n]{0,50}/gi,
+      /(?:typical|classic) you\b[^.!?\n]*/gi,
+      /(?:nobody|no one) else (?:has a problem with|would put up with)\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "I'm not going to continue a conversation with name-calling in it.",
+      "Tell me the behaviour you want changed. I won't discuss my character.",
+      "I'll come back to this when we can talk without insults.",
+    ],
+    note:
+      "'Always/never' absolutes are flagged as escalation, not proof of intent — stressed people use them too. " +
+      "Weight them by how often they appear.",
+  },
+  {
+    id: "withdrawal",
+    label: "Punitive withdrawal",
+    family: "coercion",
+    severity: 2,
+    lineage: "Stonewalling in Gottman's 'Four Horsemen'; silent treatment as coercive discipline (Williams, 2001).",
+    mechanism:
+      "Connection itself becomes the currency: affection, communication, or basic acknowledgement is withdrawn " +
+      "until you correct course. It teaches that disagreement costs the relationship.",
+    patterns: [
+      /(?:i'?m|im) done (?:talking|with this|with you)\b[^.!?\n]*/gi,
+      /don'?t (?:bother|even) (?:talking|speaking|texting) (?:to )?me\b[^.!?\n]*/gi,
+      /(?:fine|whatever)\.?\s*(?:do what you want|forget it|have it your way)\b[^.!?\n]*/gi,
+      /(?:lose my number|we'?re done|forget i said anything)\b[^.!?\n]*/gi,
+      /(?:i (?:guess|suppose) i'?ll just|maybe i should just) (?:leave|go|disappear)\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "I'm open to talking when you're ready to engage.",
+      "Silence won't change my position, but I'm here when you want to discuss it.",
+      "I'll take the space too. My point stands for when we resume.",
+    ],
+  },
+  {
+    id: "future-faking",
+    label: "Future faking",
+    family: "obligation",
+    severity: 2,
+    lineage: "Walker (1979), cycle-of-abuse 'reconciliation' phase; hoovering in coercive-control literature.",
+    mechanism:
+      "A vivid promise of change is issued to defuse the present consequence — with no mechanism, timeline, or " +
+      "track record attached. The promise itself is the payment.",
+    patterns: [
+      /i (?:promise|swear)[^.!?\n]{0,40}?(?:i'?ll|i will|things will|it will|never again)[^.!?\n]*/gi,
+      /(?:things|it) will be different (?:this time|now|from now on)\b[^.!?\n]*/gi,
+      /i'?m (?:going to|gonna) change\b[^.!?\n]*/gi,
+      /(?:just )?give me (?:one more|another) chance\b[^.!?\n]*/gi,
+      /(?:this will )?never happen again\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "I'll believe the change when I see it sustained, not when I hear it promised.",
+      "What is the concrete plan, and what happens if it doesn't hold?",
+      "Past promises are my data. I'm deciding on the data.",
+    ],
+  },
+  {
+    id: "triangulation",
+    label: "Triangulation / manufactured consensus",
+    family: "rhetoric",
+    severity: 2,
+    lineage: "Bowen family-systems theory; appeal to popularity (argumentum ad populum).",
+    mechanism:
+      "Absent third parties are recruited as a jury. 'Everyone thinks' converts an unverifiable claim into " +
+      "social pressure and leaves you outnumbered inside your own conversation.",
+    patterns: [
+      /every(?:one|body) (?:thinks|says|agrees|knows|can see)\b[^.!?\n]*/gi,
+      /even (?:your|my) (?:friends?|family|mom|mother|sister|brother|therapist) (?:thinks?|says?|agrees?)\b[^.!?\n]*/gi,
+      /people are (?:talking|saying|noticing)\b[^.!?\n]*/gi,
+      /(?:no one|nobody) else (?:thinks|has a problem)\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "I'm talking with you, not a committee. What do you say?",
+      "If someone has a concern, they can raise it with me directly.",
+      "Consensus isn't evidence. Let's stay on what actually happened.",
+    ],
+  },
+  {
+    id: "deflection",
+    label: "Circular deflection / whataboutism",
+    family: "rhetoric",
+    severity: 1,
+    lineage: "Tu quoque and red-herring fallacies; 'kitchen-sinking' in couples research.",
+    mechanism:
+      "The topic is never allowed to stabilize. Counter-accusations and ancient history rotate fast enough " +
+      "that the original question dies of exhaustion rather than resolution.",
+    patterns: [
+      /(?:what about|whatabout) (?:you|the time|when you|that time)\b[^.!?\n]*/gi,
+      /(?:this is|that'?s) just like (?:that time|when you)\b[^.!?\n]*/gi,
+      /(?:oh )?so now (?:i'?m|you'?re|it'?s|suddenly)\b[^.!?\n]*/gi,
+      /(?:you'?re one to talk|look who'?s talking|pot calling)\b[^.!?\n]*/gi,
+      /why are we (?:even )?talking about this\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "That's a separate topic. I'll finish this one first.",
+      "We can schedule that conversation. Today's question is still open.",
+      "I notice we've changed subjects. Returning to my question: …",
+    ],
+  },
+  {
+    id: "conditional-love",
+    label: "Conditional regard",
+    family: "obligation",
+    severity: 2,
+    lineage: "Rogers (1959) on conditions of worth; Assor et al. (2004) on parental conditional regard.",
+    mechanism:
+      "Acceptance is made contingent and revocable — love arrives as a reward for compliance and is withdrawn " +
+      "as a penalty. Over time this trains self-monitoring rather than self-knowledge.",
+    patterns: [
+      /i (?:could|would) love you (?:more |again )?if\b[^.!?\n]*/gi,
+      /(?:i'?ll stay|we'?ll be fine|i'?ll forgive you) (?:if|as long as|once) you\b[^.!?\n]*/gi,
+      /(?:you'?re lucky|be grateful) (?:i|that i)\b[^.!?\n]*/gi,
+      /(?:this is )?your (?:last|final) chance\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "Love with conditions attached isn't something I can negotiate for.",
+      "I'd rather know where I actually stand than earn my way back.",
+      "I'm not going to perform to keep this.",
+    ],
+  },
+  {
+    id: "false-dilemma",
+    label: "False dilemma",
+    family: "rhetoric",
+    severity: 1,
+    lineage: "Classical informal fallacy; Walton (1992) on argumentation schemes.",
+    mechanism:
+      "A landscape of options is compressed into two, one of which is unacceptable. The narrowing is the " +
+      "argument — it does the work before you get a chance to think.",
+    patterns: [
+      /(?:either|its either|it'?s either) [^.!?\n]{0,50}? or [^.!?\n]{0,50}/gi,
+      /(?:if you'?re not|you'?re either) (?:with me|on my side)\b[^.!?\n]*/gi,
+      /(?:you|we) (?:have|has) no (?:other )?choice\b[^.!?\n]*/gi,
+      /(?:it'?s me or|choose:? me or)\b[^.!?\n]*/gi,
+    ],
+    scripts: [
+      "Those aren't the only two options. Here's a third.",
+      "I'm not accepting the framing. Let me restate the problem.",
+      "I need time to think rather than pick between two bad doors.",
+    ],
+  },
+];
+
+/**
+ * Crisis-escalation signatures. Matching any of these surfaces the safety panel.
+ *
+ * Two categories are included, both grounded in danger-assessment research
+ * (Campbell's Danger Assessment; Stark on separation violence):
+ *   (a) explicit references to physical harm, weapons, or self-harm as leverage;
+ *   (b) retaliation threats attached to leaving or telling — separation and
+ *       disclosure are the documented peak-risk windows, so a threat conditioned
+ *       on either is treated as safety-relevant rather than merely rhetorical.
+ */
+const SAFETY_SIGNALS = [
+  /\b(?:kill|hurt|beat|strangle|choke|stab|shoot|smash|break) (?:you|him|her|them|myself|the (?:kids|children|dog|cat))\b/gi,
+  /\b(?:i(?:'?m| am)? ?(?:going to|gonna)|i'?ll|i will) [^.!?\n]{0,24}?\bmake (?:sure )?(?:you|him|her|them) (?:pay|regret|sorry|suffer)\b/gi,
+  /\b(?:i(?:'?m| am)? ?(?:going to|gonna)|i'?ll|i will) end (?:it|you|this|myself)\b/gi,
+  /\bif i can'?t have you\b/gi,
+  /\b(?:gun|knife|weapon)\b[^.!?\n]{0,40}?\b(?:you|show|use|get)\b/gi,
+  /\byou'?ll (?:be sorry|regret (?:it|this)|never (?:see|leave))\b/gi,
+  // Separation/disclosure-conditioned retaliation. The consequence side is
+  // constrained to harmful outcomes so benign conditionals ("if you go to the
+  // party I'll stay home") do not trip the safety panel.
+  /\bif you (?:ever )?(?:leave|walk out|tell (?:anyone|him|her|them)|call the (?:cops|police)|report me|go to the (?:cops|police))\b[^.!?\n]{0,70}?\b(?:i'?ll|i will|you'?ll)\s*(?:\w+\s+){0,3}?(?:regret|sorry|suffer|pay|destroy|ruin|end|hurt|kill|take the (?:kids|children)|never see|lose (?:everything|the kids))\b/gi,
+  /\b(?:i(?:'?ll| will)) (?:hurt|kill) myself if you\b/gi,
+];
+
+
+/**
+ * linguistics.js — structural features, independent of the tactic lexicon.
+ *
+ * Signature matching answers "which known tactics appear?". These functions answer
+ * "what shape does this message have?" — the discourse-level properties that show
+ * up in coercive communication even when no catchphrase does. They are deliberately
+ * simple and explainable: every number here can be traced to a countable thing in
+ * the text, which matters when the output is shown to someone whose judgement is
+ * already under attack.
+ */
+
+const SENT_SPLIT = /(?<=[.!?])\s+|\n+/;
+
+/** Split into sentences, keeping the original character offsets. */
+function sentences(text) {
+  const out = [];
+  let idx = 0;
+  for (const raw of text.split(SENT_SPLIT)) {
+    const start = text.indexOf(raw, idx);
+    if (raw.trim()) out.push({ text: raw, start, end: start + raw.length });
+    idx = start + raw.length;
+  }
+  return out;
+}
+
+function words(text) {
+  return (text.toLowerCase().match(/[a-z']+/g) || []);
+}
+
+const ABSOLUTES = ["always", "never", "everyone", "nobody", "no one", "everything", "nothing", "constantly", "every time"];
+const HEDGES = ["maybe", "perhaps", "i think", "i feel", "it seems", "possibly", "might", "could be"];
+const REPAIR = ["i'm sorry", "im sorry", "i apologize", "you're right", "youre right", "i understand", "fair enough",
+                "that makes sense", "thank you", "i hear you", "my fault", "i was wrong"];
+const OBLIGATION_MODALS = /\b(?:you (?:should|must|have to|need to|better|ought to)|don'?t you dare)\b/gi;
+
+/**
+ * Second-person density: how much of the message is aimed at the listener rather
+ * than owned by the speaker. High "you" with low "I" is the linguistic shape of
+ * accusation; the inverse is the shape of disclosure.
+ */
+function pronounBalance(text) {
+  const w = words(text);
+  const you = w.filter(t => ["you", "your", "yours", "youre", "you're"].includes(t)).length;
+  const i = w.filter(t => ["i", "me", "my", "mine", "im", "i'm"].includes(t)).length;
+  const total = Math.max(w.length, 1);
+  return {
+    you, i,
+    youRate: you / total,
+    ratio: i === 0 ? (you > 0 ? Infinity : 1) : you / i,
+  };
+}
+
+function absoluteCount(text) {
+  const lower = " " + text.toLowerCase() + " ";
+  return ABSOLUTES.reduce((n, a) => n + (lower.split(a).length - 1), 0);
+}
+
+function hedgeCount(text) {
+  const lower = text.toLowerCase();
+  return HEDGES.reduce((n, h) => n + (lower.split(h).length - 1), 0);
+}
+
+/**
+ * Repair attempts — apologies, concessions, acknowledgements. Their presence is a
+ * genuine mitigating signal, and counting them keeps the tool from reading every
+ * heated message as predatory.
+ */
+function repairCount(text) {
+  const lower = text.toLowerCase();
+  return REPAIR.reduce((n, r) => n + (lower.split(r).length - 1), 0);
+}
+
+function obligationDensity(text) {
+  const m = text.match(OBLIGATION_MODALS) || [];
+  return { count: m.length, per100: (m.length / Math.max(words(text).length, 1)) * 100 };
+}
+
+/** ALL-CAPS shouting and exclamation stacking — intensity markers, not content. */
+function intensityMarkers(text) {
+  const caps = (text.match(/\b[A-Z]{3,}\b/g) || []).filter(w => !["OK", "TV", "USA", "PM", "AM"].includes(w));
+  const bangs = (text.match(/!/g) || []).length;
+  const multiBang = (text.match(/!{2,}/g) || []).length;
+  return { capsWords: caps.length, exclamations: bangs, stacked: multiBang };
+}
+
+/**
+ * Conditional-consequence constructions: "if you X, (then) I/you Y".
+ * This is the grammatical skeleton of a threat or a bargain, and it is detectable
+ * without knowing which specific words fill the slots.
+ */
+function conditionalThreats(text) {
+  const re = /\bif you\b[^.!?\n]{3,80}?(?:,|then)?\s*(?:i(?:'?ll| will| am going to)|you(?:'?ll| will))\b[^.!?\n]*/gi;
+  return (text.match(re) || []);
+}
+
+/**
+ * Agency deletion: harm described with the actor removed ("it happened",
+ * "things got out of hand"). A well-documented rhetorical move for reporting
+ * one's own actions as weather.
+ */
+function agencyDeletion(text) {
+  const re = /\b(?:things? (?:got|escalated|happened)|it (?:just )?happened|mistakes were made|things got out of hand)\b[^.!?\n]*/gi;
+  return (text.match(re) || []);
+}
+
+/** Everything at once, for the analyzer. */
+function structuralProfile(text) {
+  const sents = sentences(text);
+  const w = words(text);
+  return {
+    charCount: text.length,
+    wordCount: w.length,
+    sentenceCount: sents.length,
+    pronouns: pronounBalance(text),
+    absolutes: absoluteCount(text),
+    hedges: hedgeCount(text),
+    repairs: repairCount(text),
+    obligation: obligationDensity(text),
+    intensity: intensityMarkers(text),
+    conditionals: conditionalThreats(text),
+    agencyDeleted: agencyDeletion(text),
+    questionCount: (text.match(/\?/g) || []).length,
+  };
+}
+
+
+/**
+ * analyzer.js — the pipeline.
+ *
+ *   text ──▶ signature pass ──▶ overlap resolution ──▶ structural pass
+ *        ──▶ family indices ──▶ pattern read ──▶ AnalysisResult
+ *
+ * Design commitments, all of them deliberate:
+ *
+ *  1. Runs entirely in the caller's process. No network, no storage, no telemetry.
+ *  2. Describes *text*, never people. The output never concludes that anyone is
+ *     an abuser — it reports which documented patterns appear in a message, and
+ *     hands interpretation back to the reader.
+ *  3. Mitigating evidence counts. Repair attempts and hedging pull scores down,
+ *     because a tool that can only escalate is not an instrument, it's a mirror.
+ *  4. Everything is explainable. Each number traces to matched spans you can see
+ *     highlighted in the original text.
+ */
+
+
+const SEVERITY_WEIGHT = { 1: 4, 2: 9, 3: 16 };
+
+/** Run every signature and return raw, possibly-overlapping hits. */
+function signaturePass(text) {
+  const hits = [];
+  for (const tactic of TAXONOMY) {
+    for (const re of tactic.patterns) {
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        const matched = m[0];
+        if (matched.trim().length >= 4) {
+          hits.push({
+            start: m.index,
+            end: m.index + matched.length,
+            text: matched,
+            tacticId: tactic.id,
+            severity: tactic.severity,
+            family: tactic.family,
+          });
+        }
+        if (m.index === re.lastIndex) re.lastIndex++; // zero-width guard
+      }
+    }
+  }
+  return hits;
+}
+
+/**
+ * Resolve overlaps so highlighting stays valid HTML and no phrase is double-counted.
+ * Priority: higher severity wins; then the longer span; then the earlier start.
+ */
+function resolveOverlaps(hits) {
+  const sorted = [...hits].sort((a, b) =>
+    b.severity - a.severity || (b.end - b.start) - (a.end - a.start) || a.start - b.start);
+  const kept = [];
+  for (const h of sorted) {
+    if (!kept.some(k => h.start < k.end && k.start < h.end)) kept.push(h);
+  }
+  return kept.sort((a, b) => a.start - b.start);
+}
+
+/** Structural findings become pseudo-hits so they appear in the same UI stream. */
+function structuralFindings(text, profile) {
+  const found = [];
+  const push = (id, label, family, severity, why, spans = []) =>
+    found.push({ id, label, family, severity, why, spans });
+
+  if (profile.conditionals.length) {
+    push("struct-conditional", "Conditional consequence", "coercion", 3,
+      `${profile.conditionals.length} "if you… then I/you…" construction${profile.conditionals.length > 1 ? "s" : ""} — ` +
+      `the grammatical skeleton of a bargain or threat.`, profile.conditionals);
+  }
+  if (profile.agencyDeleted.length) {
+    push("struct-agency", "Agency deletion", "blame", 2,
+      "Harm described with the actor removed — events reported as weather rather than choices.",
+      profile.agencyDeleted);
+  }
+  if (profile.obligation.count >= 2) {
+    push("struct-obligation", "Obligation stacking", "obligation", 2,
+      `${profile.obligation.count} directives aimed at you ("you should / must / have to").`);
+  }
+  if (profile.wordCount >= 25 && profile.pronouns.ratio >= 3 && profile.pronouns.you >= 4) {
+    push("struct-youfocus", "Second-person saturation", "blame", 1,
+      `"You" outnumbers "I" ${profile.pronouns.ratio === Infinity ? "with no first-person ownership at all" :
+        `${profile.pronouns.ratio.toFixed(1)} to 1`} — the shape of accusation rather than disclosure.`);
+  }
+  if (profile.absolutes >= 3) {
+    push("struct-absolutes", "Absolutist framing", "escalation", 1,
+      `${profile.absolutes} absolutes (always / never / everyone) — closes the door on specifics.`);
+  }
+  if (profile.intensity.capsWords >= 3 || profile.intensity.stacked >= 2) {
+    push("struct-intensity", "Intensity escalation", "escalation", 1,
+      "Sustained shouting markers (caps runs, stacked exclamation) used as pressure.");
+  }
+  return found;
+}
+
+/** Weighted 0–100 index per family, damped by message length and repair attempts. */
+function familyIndices(hits, structural, profile) {
+  const raw = {};
+  for (const key of Object.keys(FAMILIES)) raw[key] = 0;
+
+  for (const h of hits) raw[h.family] += SEVERITY_WEIGHT[h.severity];
+  for (const s of structural) raw[s.family] += SEVERITY_WEIGHT[s.severity] * 0.6;
+
+  // Longer messages get more chances to match; normalize gently (sqrt, not linear,
+  // so a long coercive message doesn't score lower than a short blunt one).
+  const lengthDamp = Math.sqrt(Math.max(profile.wordCount, 12) / 45);
+  // Genuine repair attempts reduce pressure readings — capped so they can't mask threats.
+  const repairRelief = Math.min(0.35, profile.repairs * 0.09);
+
+  const indices = {};
+  for (const [key, val] of Object.entries(raw)) {
+    const scaled = (val / lengthDamp) * (1 - repairRelief);
+    indices[key] = Math.max(0, Math.min(100, Math.round(scaled)));
+  }
+  return indices;
+}
+
+/** A short, plain-language read of the whole message. Never diagnostic. */
+function patternRead(hits, indices, profile, safety) {
+  const distinct = new Set(hits.map(h => h.tacticId));
+  const top = Object.entries(indices).sort((a, b) => b[1] - a[1])[0];
+  const composite = Math.round(
+    Object.values(indices).reduce((a, b) => a + b, 0) / Object.keys(indices).length * 1.6);
+
+  let band, headline, body;
+  if (safety.length) {
+    band = "critical";
+    headline = "Language consistent with threat is present";
+    body = "At least one phrase in this message reads as a threat of harm. That is a safety question before " +
+           "it is a communication question. Please read the panel below.";
+  } else if (composite >= 55 || distinct.size >= 5) {
+    band = "high";
+    headline = "Multiple reinforcing pressure patterns";
+    body = `${distinct.size} distinct tactic classes appear together. Individually these can be clumsy conflict; ` +
+           `layered like this, they function as a system — each one makes the others harder to name.`;
+  } else if (composite >= 25 || distinct.size >= 2) {
+    band = "moderate";
+    headline = "Identifiable pressure, mixed with ordinary conflict";
+    body = "Some recognized tactics are present but not saturating. Context and repetition over time matter " +
+           "more than any single message — one heated exchange is not a pattern.";
+  } else if (distinct.size >= 1) {
+    band = "low";
+    headline = "Isolated markers, low density";
+    body = "A small number of flagged phrases. People under stress reach for these without strategy. " +
+           "Worth noticing, not worth alarm on its own.";
+  } else {
+    band = "clear";
+    headline = "No catalogued tactics detected";
+    body = "This message doesn't match the patterns in the library. That is not proof it felt fine — " +
+           "harm can be conveyed in ways no text analyzer will catch. Your experience of it still counts as data.";
+  }
+
+  const mitigating = [];
+  if (profile.repairs) mitigating.push(`${profile.repairs} repair attempt${profile.repairs > 1 ? "s" : ""} (apology, concession, acknowledgement)`);
+  if (profile.hedges >= 2) mitigating.push(`${profile.hedges} hedged statements — room left for other views`);
+  if (profile.pronouns.ratio < 1.2 && profile.wordCount > 25) mitigating.push("balanced I/you ownership");
+
+  return { band, headline, body, composite: Math.min(100, composite), dominantFamily: top?.[0] ?? null, mitigating };
+}
+
+/**
+ * Analyze a message.
+ * @param {string} text
+ * @returns {{
+ *   hits: Array, structural: Array, indices: Object, profile: Object,
+ *   safety: Array, read: Object, tacticsById: Object
+ * }}
+ */
+function analyze(text) {
+  const clean = String(text ?? "");
+  if (!clean.trim()) {
+    return {
+      hits: [], structural: [], indices: {}, profile: structuralProfile(""),
+      safety: [], read: { band: "empty", headline: "Nothing to analyze", body: "", composite: 0, mitigating: [] },
+      tacticsById: {},
+    };
+  }
+
+  const profile = structuralProfile(clean);
+  const hits = resolveOverlaps(signaturePass(clean));
+  const structural = structuralFindings(clean, profile);
+
+  const safety = [];
+  for (const re of SAFETY_SIGNALS) {
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(clean)) !== null) {
+      safety.push(m[0]);
+      if (m.index === re.lastIndex) re.lastIndex++;
+    }
+  }
+
+  const indices = familyIndices(hits, structural, profile);
+  const read = patternRead(hits, indices, profile, safety);
+  const tacticsById = Object.fromEntries(TAXONOMY.map(t => [t.id, t]));
+
+  return { hits, structural, indices, profile, safety, read, tacticsById };
+}
+
+/** Plain-text report for export. Deliberately printable and paste-able. */
+function toReport(text, result, { includeSource = true } = {}) {
+  const { hits, structural, indices, read, tacticsById, profile } = result;
+  const L = [];
+  L.push("DECEPTION DECODER — PATTERN REPORT");
+  L.push("Generated " + new Date().toLocaleString());
+  L.push("Analysis performed locally in the browser. Nothing was uploaded.");
+  L.push("");
+  L.push("SUMMARY");
+  L.push(`  ${read.headline}`);
+  L.push(`  ${read.body}`);
+  L.push(`  Composite pressure index: ${read.composite}/100`);
+  if (read.mitigating.length) L.push(`  Mitigating signals: ${read.mitigating.join("; ")}`);
+  L.push("");
+  L.push("INDICES");
+  for (const [k, v] of Object.entries(indices)) {
+    L.push(`  ${String(FAMILIES[k].label).padEnd(22)} ${String(v).padStart(3)}/100`);
+  }
+  L.push("");
+  L.push(`FLAGGED PHRASES (${hits.length})`);
+  hits.forEach((h, i) => {
+    const t = tacticsById[h.tacticId];
+    L.push(`  ${String(i + 1).padStart(2, "0")}. [${t.label}] "${h.text.trim()}"`);
+    L.push(`      ${t.mechanism.split(". ")[0]}.`);
+    L.push(`      Source: ${t.lineage}`);
+  });
+  if (structural.length) {
+    L.push("");
+    L.push(`STRUCTURAL FINDINGS (${structural.length})`);
+    structural.forEach(s => L.push(`  · ${s.label}: ${s.why}`));
+  }
+  L.push("");
+  L.push("TEXT PROFILE");
+  L.push(`  ${profile.wordCount} words · ${profile.sentenceCount} sentences · ` +
+         `you:I ratio ${profile.pronouns.ratio === Infinity ? "∞" : profile.pronouns.ratio.toFixed(1)}`);
+  if (includeSource) {
+    L.push("");
+    L.push("SOURCE TEXT");
+    L.push(text.split("\n").map(l => "  " + l).join("\n"));
+  }
+  L.push("");
+  L.push("This report describes patterns in a piece of text. It is not a psychological");
+  L.push("assessment, a diagnosis, or evidence about any person's intent or character.");
+  return L.join("\n");
+}
+
+
+/**
+ * app.js — UI controller.
+ *
+ * Keeps DOM concerns out of the engine entirely: this module reads the textarea,
+ * calls analyze(), and renders. No state is persisted anywhere — reloading the
+ * page leaves nothing behind, by design.
+ */
+
+
+const $ = sel => document.querySelector(sel);
+const $$ = sel => [...document.querySelectorAll(sel)];
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+const SEVERITY_LABEL = { 1: "Concerning", 2: "Serious", 3: "Critical" };
+
+const SAMPLES = [
+  {
+    name: "Layered pressure",
+    text: `I can't believe you'd accuse me of that after everything I've done for you. That never happened — you're remembering it wrong, and honestly everyone agrees you've been paranoid lately. Look what you made me do by pushing me like this. If you really loved me you'd drop it. I promise things will be different this time, just give me one more chance. And what about that time you cancelled on my birthday? Fine. Whatever. Do what you want.`,
+  },
+  {
+    name: "Ordinary conflict",
+    text: `I'm frustrated. I asked twice about the weekend and didn't hear back, and I ended up making plans I now have to cancel. I'm sorry I snapped about it on the phone — that wasn't fair and you're right that I could have just said I was annoyed. Can we figure out a better way to handle scheduling?`,
+  },
+  {
+    name: "Control & isolation",
+    text: `Why didn't you answer? I checked your phone and saw you were texting your sister again. Those people are toxic and they've always hated me — it should be just us. You need to ask me first before you make plans. If you ever walk out I will make sure you regret it.`,
+  },
+];
+
+let current = { text: "", result: null };
+
+/* ---------------- rendering ---------------- */
+
+function renderVerdict(result) {
+  const { read } = result;
+  const v = $("#verdict");
+  v.dataset.band = read.band;
+  v.innerHTML = `
+    <h3>${esc(read.headline)}</h3>
+    <p>${esc(read.body)}</p>
+    ${read.mitigating.length
+      ? `<p class="mitigating"><strong>Also present:</strong> ${esc(read.mitigating.join(" · "))}</p>`
+      : ""}
+  `;
+}
+
+function renderIndices(result) {
+  const wrap = $("#indices");
+  wrap.innerHTML = Object.entries(FAMILIES).map(([key, fam]) => `
+    <div class="index-row">
+      <span class="name" title="${esc(fam.blurb)}">${esc(fam.label)}</span>
+      <span class="track"><span class="fill" data-target="${result.indices[key] ?? 0}"></span></span>
+      <span class="val">${result.indices[key] ?? 0}</span>
+    </div>`).join("");
+  // animate after paint so the transition actually runs
+  requestAnimationFrame(() =>
+    $$("#indices .fill").forEach(f => (f.style.width = f.dataset.target + "%")));
+}
+
+function renderSafety(result) {
+  const panel = $("#safety");
+  if (!result.safety.length) { panel.hidden = true; return; }
+  panel.hidden = false;
+  panel.innerHTML = `
+    <h3>Before anything else</h3>
+    <p>This message contains language consistent with a threat of harm. Threats made around leaving,
+       telling someone, or contacting authorities are treated seriously in danger-assessment research —
+       separation is a documented high-risk period, whether or not the threat has been acted on before.</p>
+    <p style="margin-top:10px"><strong>You are not overreacting by taking this seriously.</strong></p>
+    <ul>
+      <li><strong>US:</strong> National DV Hotline — <a href="tel:18007997233">1-800-799-7233</a>, or text START to 88788</li>
+      <li><strong>US:</strong> Crisis &amp; suicide lifeline — call or text <a href="tel:988">988</a></li>
+      <li><strong>UK:</strong> National DA Helpline — 0808 2000 247</li>
+      <li><strong>Canada:</strong> Talk Suicide — 1-833-456-4566</li>
+      <li><strong>Australia:</strong> 1800RESPECT — 1800 737 732</li>
+      <li>Elsewhere: <a href="https://www.befrienders.org" rel="noopener noreferrer" target="_blank">befrienders.org</a> lists helplines by country</li>
+    </ul>
+    <p style="margin-top:12px">If you are in immediate danger, contact your local emergency number.</p>`;
+}
+
+function renderAnnotated(text, result) {
+  const el = $("#annotated");
+  let html = "", cursor = 0;
+  result.hits.forEach((h, i) => {
+    html += esc(text.slice(cursor, h.start));
+    const t = result.tacticsById[h.tacticId];
+    html += `<mark tabindex="0" role="button" data-sev="${h.severity}" data-i="${i}"
+              aria-label="Finding ${i + 1}: ${esc(t.label)}. Open details.">${esc(h.text)}<sup>${i + 1}</sup></mark>`;
+    cursor = h.end;
+  });
+  html += esc(text.slice(cursor));
+  el.innerHTML = html || `<span style="color:var(--paper-faint)">No text to display.</span>`;
+}
+
+function renderFindings(result) {
+  const list = $("#findings");
+  const items = [];
+
+  result.hits.forEach((h, i) => {
+    const t = result.tacticsById[h.tacticId];
+    items.push(`
+      <button class="finding" data-sev="${h.severity}" data-i="${i}">
+        <span class="top">
+          <span class="name">${i + 1}. ${esc(t.label)}</span>
+          <span class="sev-chip">${SEVERITY_LABEL[h.severity]}</span>
+        </span>
+        <span class="quote">“${esc(h.text.trim())}”</span>
+        <span class="why">${esc(t.mechanism.split(". ")[0])}.</span>
+      </button>`);
+  });
+
+  result.structural.forEach(s => {
+    items.push(`
+      <div class="finding" data-sev="${s.severity}" style="cursor:default">
+        <span class="top">
+          <span class="name">${esc(s.label)}</span>
+          <span class="sev-chip">Structural</span>
+        </span>
+        <span class="why">${esc(s.why)}</span>
+      </div>`);
+  });
+
+  $("#findings-count").textContent =
+    `${result.hits.length} flagged phrase${result.hits.length === 1 ? "" : "s"}` +
+    (result.structural.length ? ` · ${result.structural.length} structural` : "");
+
+  list.innerHTML = items.length ? items.join("") : `
+    <div class="finding" style="cursor:default;--sev:var(--accent)">
+      <span class="name">Nothing in the library matched</span>
+      <span class="why">That doesn't mean the message was fine. It means these particular
+        catalogued patterns weren't present. Your own read still counts.</span>
+    </div>`;
+}
+
+function render() {
+  const { text, result } = current;
+  renderVerdict(result);
+  renderIndices(result);
+  renderSafety(result);
+  renderAnnotated(text, result);
+  renderFindings(result);
+  $("#results").hidden = false;
+  $("#results").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}
+
+/* ---------------- drawer ---------------- */
+
+function openDrawer(index) {
+  const h = current.result.hits[index];
+  if (!h) return;
+  const t = current.result.tacticsById[h.tacticId];
+  const d = $("#drawer");
+  d.dataset.sev = h.severity;
+  $("#drawer-body").innerHTML = `
+    <span class="chip">${SEVERITY_LABEL[h.severity]} · ${esc(FAMILIES[t.family].label)}</span>
+    <h3>${esc(t.label)}</h3>
+    <div class="quoted">“${esc(h.text.trim())}”</div>
+    <h4>What it does</h4>
+    <p>${esc(t.mechanism)}</p>
+    ${t.note ? `<div class="note"><strong>Careful:</strong> ${esc(t.note)}</div>` : ""}
+    <h4>Where this comes from</h4>
+    <p class="lineage">${esc(t.lineage)}</p>
+    <h4>Non-reactive replies</h4>
+    ${t.scripts.map((s, i) => `
+      <div class="script">
+        <span class="n">${i + 1}</span>
+        <span class="s">${esc(s)}</span>
+        <button class="copy" data-copy="${esc(s)}">Copy</button>
+      </div>`).join("")}
+    <p style="margin-top:14px;font-size:13px;color:var(--paper-faint)">
+      These are starting points, not scripts you owe anyone. Flat tone, no justification,
+      no counter-attack — brevity is the armour. Edit them until they sound like you.</p>`;
+  d.classList.add("open");
+  $("#scrim").classList.add("open");
+  d.setAttribute("aria-hidden", "false");
+  $("#drawer .close").focus();
+}
+
+function closeDrawer() {
+  $("#drawer").classList.remove("open");
+  $("#scrim").classList.remove("open");
+  $("#drawer").setAttribute("aria-hidden", "true");
+}
+
+/* ---------------- actions ---------------- */
+
+function run() {
+  const text = $("#input").value;
+  if (!text.trim()) { $("#input").focus(); return; }
+  current = { text, result: analyze(text) };
+  render();
+  // Console trace: the engine's reasoning is inspectable, never hidden.
+  console.info("[decoder] analysis complete", {
+    flagged: current.result.hits.length,
+    structural: current.result.structural.length,
+    indices: current.result.indices,
+    band: current.result.read.band,
+  });
+}
+
+function clearAll() {
+  current = { text: "", result: null };
+  $("#input").value = "";
+  $("#results").hidden = true;
+  $("#counter").textContent = "0 characters";
+  $("#input").focus();
+}
+
+function copyReport() {
+  if (!current.result) return;
+  const report = toReport(current.text, current.result);
+  navigator.clipboard?.writeText(report).then(() => {
+    const b = $("#copy-report");
+    b.textContent = "Copied to clipboard";
+    setTimeout(() => (b.textContent = "Copy report"), 1800);
+  }).catch(() => {
+    // Clipboard blocked (insecure context / permissions): fall back to a download.
+    const blob = new Blob([report], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "decoder-report.txt";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+}
+
+/* ---------------- wiring ---------------- */
+
+document.addEventListener("DOMContentLoaded", () => {
+  const input = $("#input");
+
+  input.addEventListener("input", () => {
+    $("#counter").textContent = `${input.value.length.toLocaleString()} characters`;
+  });
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); run(); }
+  });
+
+  $("#decode").addEventListener("click", run);
+  $("#clear").addEventListener("click", clearAll);
+  $("#copy-report").addEventListener("click", copyReport);
+  $("#print-report").addEventListener("click", () => window.print());
+
+  $("#sample").addEventListener("click", () => {
+    const s = SAMPLES[Math.floor(Math.random() * SAMPLES.length)];
+    input.value = s.text;
+    input.dispatchEvent(new Event("input"));
+    $("#sample").textContent = `Example: ${s.name}`;
+    setTimeout(() => ($("#sample").textContent = "Try an example"), 2600);
+  });
+
+  // Delegated: annotated marks + finding cards both open the drawer.
+  document.addEventListener("click", e => {
+    const mark = e.target.closest("#annotated mark");
+    if (mark) return openDrawer(+mark.dataset.i);
+    const card = e.target.closest(".finding[data-i]");
+    if (card) return openDrawer(+card.dataset.i);
+    const copy = e.target.closest(".copy");
+    if (copy) {
+      navigator.clipboard?.writeText(copy.dataset.copy);
+      copy.textContent = "Copied";
+      setTimeout(() => (copy.textContent = "Copy"), 1400);
+    }
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeDrawer();
+    const mark = e.target.closest?.("#annotated mark");
+    if (mark && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openDrawer(+mark.dataset.i); }
+  });
+  $("#drawer .close").addEventListener("click", closeDrawer);
+  $("#scrim").addEventListener("click", closeDrawer);
+});
+
+
+})();
+</script>
+<noscript>
+  <div class="wrap" style="padding:30px 0;color:var(--paper-dim)">
+    This tool analyses text entirely in your browser, which requires JavaScript to be enabled.
+    Nothing is sent to a server either way.
+  </div>
+</noscript>
+</body>
+</html>
