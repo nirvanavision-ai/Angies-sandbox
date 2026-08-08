@@ -42,6 +42,12 @@ const html = read("index.html")
 
 writeFileSync(join(ROOT, "standalone.html"), html);
 
+// Also publish to the repository root as index.html. Static hosts (Hostinger,
+// Netlify, GitHub Pages) serve the repo root, so this is what makes
+// bullshitdecoder.com resolve to the app. It is generated, never hand-edited —
+// re-run `npm run build` after changing anything under deception-decoder/.
+writeFileSync(join(ROOT, "..", "index.html"), html);
+
 // Sanity check: catches the $-splice bug described above if it ever returns.
 const decls = (html.match(/const \$ = sel/g) || []).length;
 if (decls !== 1) {
