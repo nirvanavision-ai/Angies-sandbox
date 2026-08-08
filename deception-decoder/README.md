@@ -209,3 +209,12 @@ everything. If you are in danger, contact a local emergency number or a domestic
 service; the app lists several.
 
 Built with Claude Code.
+
+## Single-file build
+
+```bash
+npm run build   # → standalone.html (65 KB, works from file://)
+```
+
+Useful for emailing, USB, or hosts that mis-serve `.js` MIME types. Same app, no modules,
+no network. The modular source stays the canonical version.
